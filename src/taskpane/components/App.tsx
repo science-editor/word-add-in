@@ -1,45 +1,87 @@
 import * as React from "react";
-import Header from "./Header";
-import HeroList, { HeroListItem } from "./HeroList";
-import TextInsertion from "./TextInsertion";
+import { useState } from "react";
 import { makeStyles } from "@fluentui/react-components";
-import { Ribbon24Regular, LockOpen24Regular, DesignIdeas24Regular } from "@fluentui/react-icons";
 import { insertText } from "../taskpane";
+import { nanoid } from "nanoid";
 
-interface AppProps {
+interface Paper {
   title: string;
+  authors: string[];
+  year: number;
 }
 
 const useStyles = makeStyles({
   root: {
     minHeight: "100vh",
+    padding: "20px",
+  },
+  searchContainer: {
+    marginBottom: "20px",
+  },
+  result: {
+    marginTop: "20px",
+    padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
   },
 });
 
-const App: React.FC<AppProps> = (props: AppProps) => {
+const App = () => {
   const styles = useStyles();
-  // The list items are static and won't change at runtime,
-  // so this should be an ordinary const, not a part of state.
-  const listItems: HeroListItem[] = [
+  const [searchTerm, setSearchTerm] = useState("");
+  const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
+  const [papers] = useState<Paper[]>([
     {
-      icon: <Ribbon24Regular />,
-      primaryText: "Achieve more with Office integration",
+      title: "Efficient algorithm for initializing amplitude distribution of a quantum register",
+      authors: ["M. Andrecut", "M. K. Ali"],
+      year: 2001,
     },
     {
-      icon: <LockOpen24Regular />,
-      primaryText: "Unlock features and functionality",
+      title: "Variational Quantum Simulation of Lindblad Dynamics via Quantum State Diffusion.",
+      authors: ["Jianming Luo", "Kaihan Lin", "Xing Gao"],
+      year: 2024,
     },
     {
-      icon: <DesignIdeas24Regular />,
-      primaryText: "Create and visualize like a pro",
+      title: "Jumptime unraveling of Markovian open quantum systems",
+      authors: ["C. Gneiting", "A. Rozhkov", "F. Nori"],
+      year: 2020,
     },
-  ];
+  ]);
+
+  const handleSearch = () => {
+    const results = papers.filter((p) => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    setFoundPapers(results || null);
+  };
 
   return (
     <div className={styles.root}>
-      <Header logo="assets/logo-filled.png" title={props.title} message="Welcome to Endoc!" />
-      <HeroList message="Discover what this add-in can do for you today!" items={listItems} />
-      <TextInsertion insertText={insertText} />
+      <div className={styles.searchContainer}>
+        <h3>Discover</h3>
+        <p>Search database</p>
+        <input
+          type="text"
+          placeholder="Search by title..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <button onClick={handleSearch}>Search</button>
+      </div>
+
+      {foundPapers?.map(paper => {
+        return (
+          <div className={styles.result} key={nanoid()}>
+            <h3>{paper.title}</h3>
+            <p>Authors: {`${paper.authors.join(", ")} • ${paper.year}`}</p>
+            <button
+              onClick={() => insertText(paper)}
+            >
+              Insert
+            </button>
+          </div>
+        )
+      })
+      }
+
     </div>
   );
 };
