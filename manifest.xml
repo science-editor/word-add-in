@@ -57,7 +57,11 @@
               </Group>
             </OfficeTab>
           </ExtensionPoint>
+
+          <!-- ✅ Corrected Context Menu ExtensionPoint -->
+
         </DesktopFormFactor>
+
       </Host>
     </Hosts>
     <Resources>

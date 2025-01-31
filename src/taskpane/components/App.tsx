@@ -3,6 +3,58 @@ import { useState } from "react";
 import { makeStyles } from "@fluentui/react-components";
 import { insertText } from "../taskpane";
 import { nanoid } from "nanoid";
+import { ApolloClient, InMemoryCache, gql, ApolloProvider, useQuery } from "@apollo/client";
+
+/*
+query {
+  titleSearch(titles: ["Quantum Mechanics", "Machine Learning"]) {
+    status
+    message
+    response {
+      Title
+    }
+  }
+}
+* */
+
+const client = new ApolloClient({
+  uri: "https://se-staging.ee.ethz.ch/graphql",
+  cache: new InMemoryCache(),
+});
+
+const GET_DOCUMENTS = gql`
+  query GetDocuments {
+    getDocuments {
+      status
+      message
+      response {
+        _id
+        user
+        authorName
+        title
+        content
+        lastSavedBy
+        time
+        locked
+        lockedBy {
+          _id
+        }
+        numbering
+        orderByAppearance
+        operations
+        name
+        collaborators {
+          _id
+          name
+        }
+        reference {
+          _id
+          title
+        }
+      }
+    }
+  }
+`;
 
 interface Paper {
   title: string;
@@ -25,6 +77,26 @@ const useStyles = makeStyles({
     borderRadius: "5px",
   },
 });
+
+const DocumentsList = () => {
+  const { loading, error, data } = useQuery(GET_DOCUMENTS);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return (
+    <div>
+      <h2>Documents</h2>
+      <ul>
+        {data.getDocuments.response.map((doc: any) => (
+          <li key={doc._id}>
+            <strong>{doc.title}</strong> by {doc.authorName}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 const App = () => {
   const styles = useStyles();
@@ -54,35 +126,31 @@ const App = () => {
   };
 
   return (
-    <div className={styles.root}>
-      <div className={styles.searchContainer}>
-        <h3>Discover</h3>
-        <p>Search database</p>
-        <input
-          type="text"
-          placeholder="Search by title..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button onClick={handleSearch}>Search</button>
-      </div>
+    <ApolloProvider client={client}>
+      <div className={styles.root}>
+        <div className={styles.searchContainer}>
+          <h3>Discover</h3>
+          <p>Search database</p>
+          <input
+            type="text"
+            placeholder="Search by title..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button onClick={handleSearch}>Search</button>
+        </div>
 
-      {foundPapers?.map(paper => {
-        return (
+        {foundPapers?.map(paper => (
           <div className={styles.result} key={nanoid()}>
             <h3>{paper.title}</h3>
             <p>Authors: {`${paper.authors.join(", ")} • ${paper.year}`}</p>
-            <button
-              onClick={() => insertText(paper)}
-            >
-              Insert
-            </button>
+            <button onClick={() => insertText(paper)}>Insert</button>
           </div>
-        )
-      })
-      }
+        ))}
 
-    </div>
+        <DocumentsList />
+      </div>
+    </ApolloProvider>
   );
 };
 
