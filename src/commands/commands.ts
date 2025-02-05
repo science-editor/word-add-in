@@ -28,5 +28,14 @@ function action(event: Office.AddinCommands.Event) {
   event.completed();
 }
 
+/*
 // Register the function with Office.
 Office.actions.associate("action", action);
+
+function getButton(event: Office.AddinCommands.Event){
+  console.log('berry !');
+  event.completed();
+}
+
+Office.actions.associate("getButton", getButton);
+*/

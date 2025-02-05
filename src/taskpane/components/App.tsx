@@ -5,20 +5,9 @@ import { insertText } from "../taskpane";
 import { nanoid } from "nanoid";
 import { ApolloClient, InMemoryCache, gql, ApolloProvider, useQuery } from "@apollo/client";
 
-/*
-query {
-  titleSearch(titles: ["Quantum Mechanics", "Machine Learning"]) {
-    status
-    message
-    response {
-      Title
-    }
-  }
-}
-* */
-
 const client = new ApolloClient({
   uri: "https://se-staging.ee.ethz.ch/graphql",
+  //token:"BLA",
   cache: new InMemoryCache(),
 });
 
