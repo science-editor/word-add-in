@@ -5,30 +5,35 @@ import { insertText } from "../taskpane";
 import { nanoid } from "nanoid";
 import { ApolloClient, InMemoryCache, gql, ApolloProvider, useQuery, useLazyQuery } from "@apollo/client";
 
+/*
+Open Items:
+1. Meaning of DocumentSearch query variables
+2. Flow of queries to get documentMeta (documentSearch -> paginatedSearch -> ... ?)
+ */
+
+interface TitlesProps {
+    searchTerm: string;
+}
+
+interface DocumentSearchProps {
+    searchTerm: string;
+}
+
+interface Paper {
+    title: string;
+    authors: string[];
+    year: number;
+}
+
 const client = new ApolloClient({
     uri: "https://localhost:3001/proxy",
     cache: new InMemoryCache(),
 });
 
-/*
+
 const TITLE_SEARCH = gql`
     query TitleSearch($titles: [String]!) {
         titleSearch(titles: $titles) {
-            status
-            message
-            results {
-                title
-                author
-                year
-            }
-        }
-    }
-`;
- */
-
-const TITLE_SEARCH = gql`
-    query {
-        titleSearch(titles: ["Quantum Mechanics", "Machine Learning"]) {
             status
             message
             response {
@@ -38,12 +43,37 @@ const TITLE_SEARCH = gql`
     }
 `;
 
+const DOCUMENT_SEARCH = gql`
+    query documentSearch($ranking_variable: String, $keywords: [String], $paper_list: [MetadataInput], $ranking_collection: String, $ranking_id_field: String, $ranking_id_value: String, $ranking_id_type: String) {
+        documentSearch(
+            ranking_variable: $ranking_variable
+            keywords: $keywords
+            paper_list: $paper_list
+            ranking_collection: $ranking_collection
+            ranking_id_field: $ranking_id_field
+            ranking_id_value: $ranking_id_value
+            ranking_id_type: $ranking_id_type
+        ) {
+            status
+            message
+            response {
+                search_stats {
+                    DurationTotalSearch
+                    nMatchingDocuments
+                }
+                paper_list {
+                    collection
+                    id_field
+                    id_type
+                    id_value
+                }
+                reranking_scores
+                prefetching_scores
+            }
+        }
+    }
+`;
 
-interface Paper {
-    title: string;
-    authors: string[];
-    year: number;
-}
 
 const useStyles = makeStyles({
     root: {
@@ -62,11 +92,15 @@ const useStyles = makeStyles({
 });
 
 
-const Titles: React.FC = () => {
+const Titles: React.FC<TitlesProps> = ({ searchTerm }) => {
     const [getTitles, { loading, error, data }] = useLazyQuery(TITLE_SEARCH);
 
     const handleClick = () => {
-        getTitles()
+        getTitles({
+            variables: {
+                titles: [searchTerm] // Use searchTerm in the query variables
+            }
+        })
             .then(result => console.log('GraphQL Response:', result))
             .catch(error => console.error('GraphQL Error:', error));
     };
@@ -81,7 +115,44 @@ const Titles: React.FC = () => {
             </button>
             {data && (
                 <div>
-                    {JSON.stringify(data)}
+                    <div>Search Term: {searchTerm}</div>
+                    <div>
+                        {JSON.stringify(data)}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
+const DocumentSearch: React.FC<DocumentSearchProps> = ({ searchTerm }) => {
+    const [getDocuments, {loading, error, data}] = useLazyQuery(DOCUMENT_SEARCH);
+
+    const handleClick = () => {
+        getDocuments({
+            variables: {
+                keywords: searchTerm
+            }
+        })
+            .then(result => console.log('GraphQL Response:', result))
+            .catch(error => console.error('GraphQL Error:', error));
+    };
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error.message}</p>;
+
+    return (
+        <div>
+            <button onClick={handleClick}>
+                Search Document (GraphQL)
+            </button>
+            {data && (
+                <div>
+                    <div>Search Term: {searchTerm}</div>
+                    <div>
+                        {JSON.stringify(data)}
+                    </div>
                 </div>
             )}
         </div>
@@ -116,28 +187,6 @@ const App = () => {
         setFoundPapers(results || null);
     };
 
-    const getTitlesFetchAPI = async () => {
-        const response = await fetch("https://localhost:3001/proxy", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                query: `query {
-                titleSearch(titles: ["Quantum Mechanics", "Machine Learning"]) {
-                    status
-                    message
-                    response {
-                        Title
-                    }
-                }
-            }`
-            })
-        });
-
-        const data = await response.json(); // Parse JSON response
-        console.log(data); // Return the parsed data
-    };
 
 
     return (
@@ -162,9 +211,12 @@ const App = () => {
                         <button onClick={() => insertText(paper)}>Insert</button>
                     </div>
                 ))}
-                <Titles />
-                <button onClick={getTitlesFetchAPI}>Get Titles (Fetch API)</button>
-
+                <Titles
+                    searchTerm={searchTerm}
+                />
+                <DocumentSearch
+                    searchTerm={searchTerm}
+                />
             </div>
         </ApolloProvider>
     );
