@@ -7,8 +7,8 @@ import { ApolloClient, InMemoryCache, gql, ApolloProvider, useQuery, useLazyQuer
 
 /*
 Open Items:
-1. Meaning of DocumentSearch query variables
-2. Flow of queries to get documentMeta (documentSearch -> paginatedSearch -> ... ?)
+1. Flow of queries to get documentMeta (documentSearch -> paginatedSearch -> ... ?
+1. Implement more parameters of documentSearch Query
  */
 
 interface TitlesProps {
@@ -27,7 +27,9 @@ interface Paper {
 
 const client = new ApolloClient({
     uri: "https://localhost:3001/proxy",
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+        addTypename: false
+    }),
 });
 
 
@@ -46,7 +48,7 @@ const TITLE_SEARCH = gql`
 const DOCUMENT_SEARCH = gql`
     query documentSearch($ranking_variable: String, $keywords: [String], $paper_list: [MetadataInput], $ranking_collection: String, $ranking_id_field: String, $ranking_id_value: String, $ranking_id_type: String) {
         documentSearch(
-            ranking_variable: $ranking_variable
+            ranking_variable: $ranking_variable #semantic search bar
             keywords: $keywords
             paper_list: $paper_list
             ranking_collection: $ranking_collection
@@ -74,6 +76,53 @@ const DOCUMENT_SEARCH = gql`
     }
 `;
 
+const PAGINATED_SEARCH = gql`
+    query paginatedSearch($paper_list: [MetadataInput]!, $keywords: [String]) {
+        paginatedSearch(paper_list: $paper_list, keywords: $keywords) {
+            status
+            message
+            response {
+                _id
+                DOI
+                Title
+                Content {
+                    Abstract
+                    Abstract_Parsed {
+                        section_id
+                        section_title
+                        section_text {
+                            paragraph_id
+                            paragraph_text {
+                                sentence_id
+                                sentence_text
+                                sentence_similarity
+                                cite_spans {
+                                    start
+                                    end
+                                    text
+                                    ref_id
+                                }
+                            }
+                        }
+                    }
+                }
+                Author {
+                    FamilyName
+                    GivenName
+                }
+                Venue
+                PublicationDate {
+                    Year
+                    Month
+                    Day
+                    Name
+                }
+                id_int
+                relevant_sentences
+            }
+        }
+    }
+`;
 
 const useStyles = makeStyles({
     root: {
@@ -126,16 +175,19 @@ const Titles: React.FC<TitlesProps> = ({ searchTerm }) => {
 };
 
 
+/*
 const DocumentSearch: React.FC<DocumentSearchProps> = ({ searchTerm }) => {
     const [getDocuments, {loading, error, data}] = useLazyQuery(DOCUMENT_SEARCH);
+    //const [getPaperMeta, {loading, error, data}] = useLazyQuery(PAGINATED_SEARCH);
 
     const handleClick = () => {
         getDocuments({
             variables: {
+                //ranking_variable: searchTerm,
                 keywords: searchTerm
             }
         })
-            .then(result => console.log('GraphQL Response:', result))
+            .then(result => console.log('GraphQL Response:', result.data.documentSearch.response.paper_list))
             .catch(error => console.error('GraphQL Error:', error));
     };
 
@@ -158,6 +210,60 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({ searchTerm }) => {
         </div>
     );
 };
+*/
+
+
+const DocumentSearch: React.FC<DocumentSearchProps> = ({ searchTerm }) => {
+    const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
+    const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
+
+    const handleClick = () => {
+        getDocuments({
+            variables: {
+                keywords: searchTerm
+            }
+        })
+            .then(result => {
+                console.log(result.data.documentSearch.response.paper_list)
+                console.log("GraphQL Respoonse:", result);
+                if (result.data) {
+                    getPaperMeta({
+                        variables: {
+                            paper_list: result.data.documentSearch.response.paper_list
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error("GraphQL Error:", error));
+    };
+
+    if (loadingDocs || loadingMeta) return <p>Loading...</p>;
+    if (errorDocs) return <p>ErrorDocs: {errorDocs.message}</p>;
+    if (errorMeta) return <p>ErrorMeta: {errorMeta.message}</p>;
+
+    return (
+
+        <div>
+            <button onClick={handleClick}>Search Document (GraphQL)</button>
+            {dataDocs && (
+                <div>
+                    <div>Search Term: {searchTerm}</div>
+                    <div>
+                        <h3>Documents:</h3>
+                        {JSON.stringify(dataDocs)}
+                    </div>
+                </div>
+            )}
+            {dataMeta && (
+                <div>
+                    <h3>Paper Meta:</h3>
+                    {JSON.stringify(dataMeta)}
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 
 const App = () => {
