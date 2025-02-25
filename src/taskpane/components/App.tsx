@@ -15,13 +15,10 @@ interface TitlesProps {
     searchTerm: string;
 }
 
-interface DocumentSearchProps {
-    searchTerm: string;
-}
 
 interface Paper {
     title: string;
-    authors: string[];
+    authors: any[];
     year: number;
 }
 
@@ -175,45 +172,14 @@ const Titles: React.FC<TitlesProps> = ({ searchTerm }) => {
 };
 
 
-/*
-const DocumentSearch: React.FC<DocumentSearchProps> = ({ searchTerm }) => {
-    const [getDocuments, {loading, error, data}] = useLazyQuery(DOCUMENT_SEARCH);
-    //const [getPaperMeta, {loading, error, data}] = useLazyQuery(PAGINATED_SEARCH);
 
-    const handleClick = () => {
-        getDocuments({
-            variables: {
-                //ranking_variable: searchTerm,
-                keywords: searchTerm
-            }
-        })
-            .then(result => console.log('GraphQL Response:', result.data.documentSearch.response.paper_list))
-            .catch(error => console.error('GraphQL Error:', error));
-    };
-
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error.message}</p>;
-
-    return (
-        <div>
-            <button onClick={handleClick}>
-                Search Document (GraphQL)
-            </button>
-            {data && (
-                <div>
-                    <div>Search Term: {searchTerm}</div>
-                    <div>
-                        {JSON.stringify(data)}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-*/
+const DocumentSearch: React.FC = () => {
+    const styles = useStyles();
+    const [searchTerm, setSearchTerm] = useState("");
+    const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
+    const [papers] = useState<Paper[]>([]);
 
 
-const DocumentSearch: React.FC<DocumentSearchProps> = ({ searchTerm }) => {
     const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
 
@@ -224,104 +190,80 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({ searchTerm }) => {
             }
         })
             .then(result => {
-                console.log(result.data.documentSearch.response.paper_list)
-                console.log("GraphQL Respoonse:", result);
                 if (result.data) {
                     getPaperMeta({
                         variables: {
                             paper_list: result.data.documentSearch.response.paper_list
                         }
-                    });
+                    })
+                    .then(result => {
+                        console.log(result.data.paginatedSearch.response)
+                        const fetchedPapers = result.data.paginatedSearch.response
+                        const convertedPapers = fetchedPapers.map( paper => (
+                            {
+                                title: paper.Title,
+                                authors: paper.Author,
+                                year: paper.PublicationDate.Year
+                            }
+                        ));
+                        setFoundPapers(convertedPapers)
+                    })
                 }
             })
             .catch(error => console.error("GraphQL Error:", error));
     };
 
+    /*
     if (loadingDocs || loadingMeta) return <p>Loading...</p>;
     if (errorDocs) return <p>ErrorDocs: {errorDocs.message}</p>;
     if (errorMeta) return <p>ErrorMeta: {errorMeta.message}</p>;
+    */
 
     return (
+        <>
+            <div className={styles.searchContainer}>
+                <h3>Discover</h3>
+                <p>Search database</p>
+                <input
+                    type="text"
+                    placeholder="Search by title..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <button onClick={handleClick}>Search</button>
+            </div>
 
-        <div>
-            <button onClick={handleClick}>Search Document (GraphQL)</button>
-            {dataDocs && (
-                <div>
-                    <div>Search Term: {searchTerm}</div>
-                    <div>
-                        <h3>Documents:</h3>
-                        {JSON.stringify(dataDocs)}
-                    </div>
+            {foundPapers?.map(paper => (
+                <div className={styles.result} key={nanoid()}>
+                    <h3>{paper.title}</h3>
+                    <p>Authors: {paper.authors.map( author => `${author?.FamilyName}, ${author?.GivenName[0]}. `)}</p>
+                    <p>Year: {paper.year}</p>
+                    <button onClick={() => insertText(paper)}>Insert</button>
                 </div>
-            )}
-            {dataMeta && (
-                <div>
-                    <h3>Paper Meta:</h3>
-                    {JSON.stringify(dataMeta)}
-                </div>
-            )}
-        </div>
+            ))}
+        </>
     );
 };
 
 
 
 const App = () => {
-    const styles = useStyles();
-    const [searchTerm, setSearchTerm] = useState("");
-    const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
-    const [papers] = useState<Paper[]>([
-        {
-            title: "Efficient algorithm for initializing amplitude distribution of a quantum register",
-            authors: ["M. Andrecut", "M. K. Ali"],
-            year: 2001,
-        },
-        {
-            title: "Variational Quantum Simulation of Lindblad Dynamics via Quantum State Diffusion.",
-            authors: ["Jianming Luo", "Kaihan Lin", "Xing Gao"],
-            year: 2024,
-        },
-        {
-            title: "Jumptime unraveling of Markovian open quantum systems",
-            authors: ["C. Gneiting", "A. Rozhkov", "F. Nori"],
-            year: 2020,
-        },
-    ]);
 
+
+    /*
     const handleSearch = () => {
         const results = papers.filter((p) => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
         setFoundPapers(results || null);
     };
+     */
 
-
+    const styles = useStyles();
 
     return (
         <ApolloProvider client={client}>
             <div className={styles.root}>
-                <div className={styles.searchContainer}>
-                    <h3>Discover</h3>
-                    <p>Search database</p>
-                    <input
-                        type="text"
-                        placeholder="Search by title..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <button onClick={handleSearch}>Search</button>
-                </div>
 
-                {foundPapers?.map(paper => (
-                    <div className={styles.result} key={nanoid()}>
-                        <h3>{paper.title}</h3>
-                        <p>Authors: {`${paper.authors.join(", ")} • ${paper.year}`}</p>
-                        <button onClick={() => insertText(paper)}>Insert</button>
-                    </div>
-                ))}
-                <Titles
-                    searchTerm={searchTerm}
-                />
                 <DocumentSearch
-                    searchTerm={searchTerm}
                 />
             </div>
         </ApolloProvider>
