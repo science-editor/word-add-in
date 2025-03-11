@@ -94,7 +94,7 @@
                       <bt:Image size="80" resid="Icon.80x80"/>
                     </Icon>
                     <Action xsi:type="ExecuteFunction">
-                      <FunctionName>getButton</FunctionName>
+                      <FunctionName>insertHighlightedText</FunctionName>
                     </Action>
                   </Item>
                 </Items>
@@ -102,6 +102,7 @@
               <!-- other controls, as needed -->
             </OfficeMenu>
           </ExtensionPoint>
+
 
         </DesktopFormFactor>
       </Host>

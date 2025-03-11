@@ -28,13 +28,26 @@ function action(event: Office.AddinCommands.Event) {
   event.completed();
 }
 
-
 // Register the function with Office.
 Office.actions.associate("action", action);
 
-function getButton(event: Office.AddinCommands.Event){
-  console.log('berry !');
+
+function insertHighlightedText(event: Office.AddinCommands.Event) {
+  Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, (result) => {
+    if (result.status === Office.AsyncResultStatus.Succeeded) {
+      const selectedText = (result.value as string).trim();
+
+      if (selectedText) {
+        localStorage.setItem("searchTerm", selectedText);
+        window.dispatchEvent(new Event("storage"));
+      }
+    }
+  });
+
   event.completed();
 }
 
-Office.actions.associate("getButton", getButton);
+Office.actions.associate("insertHighlightedText", insertHighlightedText);
+
+
+

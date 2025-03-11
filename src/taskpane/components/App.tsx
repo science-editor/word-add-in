@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
 import { makeStyles } from "@fluentui/react-components";
-import { insertText } from "../taskpane";
 import DocumentSearch from "./DocumentSearch";
 import { ApolloClient, InMemoryCache, gql, ApolloProvider, useQuery, useLazyQuery } from "@apollo/client";
 
@@ -18,7 +17,7 @@ const client = new ApolloClient({
     cache: new InMemoryCache({
         addTypename: false
     }),
-});
+})
 
 
 const App = () => {
