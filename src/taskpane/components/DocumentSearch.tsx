@@ -1,65 +1,9 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { gql, useLazyQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client";
 import { nanoid } from "nanoid";
 import { insertText } from "../taskpane";
-import { makeStyles } from "@fluentui/react-components";
-import { DOCUMENT_SEARCH, PAGINATED_SEARCH} from '../schemas.js';
-
-const useStyles = makeStyles({
-    searchContainer: {
-        display: "flex",
-        flexDirection: "column",
-        marginBottom: "20px",
-    },
-    result: {
-        marginTop: "20px",
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "5px",
-    },
-    fieldset: {
-        border: "2px solid #ccc",
-        padding: "10px",
-        borderRadius: "5px",
-        transition: "border-color 0.3s ease",
-    },
-    legend: {
-        color: "#333",
-        fontSize: "14px",
-        fontWeight: "bold",
-    },
-    input: {
-        border: "none",
-        outline: "none", // Remove default focus outline on input
-        fontSize: "16px",
-        padding: "5px",
-    },
-    searchBtn: {
-        background: "linear-gradient(135deg, #007bff, #0056b3)", // Gradient blue
-        color: "#fff", // White text
-        padding: "10px 20px",
-        fontSize: "16px",
-        fontWeight: "bold",
-        border: "none",
-        borderRadius: "25px", // Rounded edges
-        cursor: "pointer",
-        transition: "all 0.3s ease",
-        boxShadow: "0 4px 10px rgba(0, 123, 255, 0.3)", // Soft shadow
-
-        "&:hover": {
-            background: "linear-gradient(135deg, #0056b3, #003f7f)", // Darker on hover
-            boxShadow: "0 6px 15px rgba(0, 86, 179, 0.5)", // Enhanced shadow
-            transform: "scale(1.05)", // Slight pop effect
-        },
-
-        "&:active": {
-            transform: "scale(0.98)", // Slight press effect
-            boxShadow: "0 2px 5px rgba(0, 86, 179, 0.5)",
-        },
-    }
-});
-
+import { DOCUMENT_SEARCH, PAGINATED_SEARCH } from '../schemas.js';
 
 interface Paper {
     title: string;
@@ -70,7 +14,6 @@ interface Paper {
 //type Keyword = string;
 
 const DocumentSearch = () => {
-    const styles = useStyles();
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
     const [keywords, setKeywords] = useState('');
@@ -167,8 +110,6 @@ const DocumentSearch = () => {
 
             if (newSearchTerm) {
                 setSearchTerm(newSearchTerm);
-
-                // ✅ Remove the stored value **after** updating state
                 localStorage.removeItem("searchTerm");
             }
         };
@@ -183,56 +124,56 @@ const DocumentSearch = () => {
 
     return (
         <>
-            <div className={styles.searchContainer}>
+            <div className="search-container">
                 <h3>Discover</h3>
 
-                <div className={styles.searchContainer}>
+                <div className="search-container">
                     <h3>Enter Zotero Credentials</h3>
                     <input
-                        className={styles.input}
+                        className="input"
                         type="text"
                         placeholder="Enter your API key..."
                         value={apiKey}
-                        onChange={handleApiKeyChange} // Saves to localStorage immediately
+                        onChange={handleApiKeyChange}
                     />
                     <input
-                        className={styles.input}
+                        className="input"
                         type="text"
                         placeholder="Enter your User ID..."
                         value={userId}
-                        onChange={handleUserIdChange} // Saves to localStorage immediately
+                        onChange={handleUserIdChange}
                     />
                     <p>Stored API Key: {apiKey ? apiKey : "Not set"}</p>
                     <p>Stored User ID: {userId ? userId : "Not set"}</p>
                 </div>
 
-                <fieldset className={styles.fieldset}>
-                    <legend className={styles.legend}>Semantic Search</legend>
+                <fieldset className="fieldset">
+                    <legend className="legend">Semantic Search</legend>
                     <input
-                        className={styles.input}
+                        className="input"
                         type="text"
                         placeholder="Search by title..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </fieldset>
-                <fieldset className={styles.fieldset}>
-                    <legend className={styles.legend}>Content based filter</legend>
+                <fieldset className="fieldset">
+                    <legend className="legend">Content based filter</legend>
                     <input
-                        className={styles.input}
+                        className="input"
                         type="text"
                         placeholder="Enter keywords..."
                         value={keywords}
                         onChange={(e) => setKeywords(e.target.value)}
                     />
                 </fieldset>
-                <button className={styles.searchBtn} onClick={handleClickSearchBtn}>Search</button>
+                <button className="search-btn" onClick={handleClickSearchBtn}>Search</button>
             </div>
 
             {foundPapers?.map(paper => (
-                <div className={styles.result} key={nanoid()}>
+                <div className="result" key={nanoid()}>
                     <h3>{paper.title}</h3>
-                    <p>Authors: {paper.authors.map( author => `${author?.FamilyName}, ${author?.GivenName[0]}. `)}</p>
+                    <p>Authors: {paper.authors.map(author => `${author?.FamilyName}, ${author?.GivenName[0]}. `)}</p>
                     <p>Year: {paper.year}</p>
                     <button onClick={() => insertText(paper)}>Insert</button>
                     <button onClick={addToZotero}>Add to Zotero</button>
@@ -240,6 +181,7 @@ const DocumentSearch = () => {
             ))}
         </>
     );
+
 };
 
 export default DocumentSearch;
