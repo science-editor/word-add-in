@@ -12,7 +12,8 @@ import { setContext } from "@apollo/client/link/context";
 // Function to create Apollo Client based on API key
 function createClient(apiKey: string) {
     const httpLink = createHttpLink({
-        uri: "https://localhost:9000/graphql",
+        //uri: "https://localhost:9000/graphql",
+        uri: "https://localhost:3001/proxy",
     });
 
     const authLink = setContext((_, { headers }) => ({

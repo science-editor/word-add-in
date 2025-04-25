@@ -126,10 +126,10 @@ const DocumentSearch = () => {
 
     async function fetchGraphQL() {
         //const url = "https://se-staging.ee.ethz.ch/graphql";
-        //const url = "https://localhost:3001/proxy" 
+        const url = "https://localhost:3001/proxy"
         //const url = "https://se-staging.ee.ethz.ch/proxy";
         //const url = "https://endoc.ethz.ch/graphql"
-        const url = "https://localhost:9000/graphql"
+        //const url = "https://localhost:9000/graphql"
         const apiKey = "";
         const query = {
             query: "query { titleSearch(titles: [\"Quantum Mechanics\", \"Machine Learning\"]) { status message response { Title } } }"
