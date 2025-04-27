@@ -18,4 +18,5 @@ EXPOSE 7000
 
 # Start the Express app
 RUN npm run build
-CMD ["npx", "serve", "-s", "dist", "-l", "7000"]
+CMD ["serve", "-s", "dist", "-l", "7000", "-b", "/word-add-in"]
+
