@@ -23,7 +23,8 @@ RUN npm run build
 EXPOSE 7000
 
 # Start the static file server
-CMD ["serve", "-s", "dist", "-l", "7000"]
+CMD ["serve", "dist", "-l", "7000"]
+
 
 
 
