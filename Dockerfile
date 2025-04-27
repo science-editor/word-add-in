@@ -1,6 +1,9 @@
 # Use the specific Node.js image as a base
 FROM node:18.20.8
 
+# Install 'serve' globally
+RUN npm install -g serve
+
 # Set the working directory inside the container
 WORKDIR /app
 
@@ -13,10 +16,13 @@ RUN npm ci
 # Copy the rest of the app source code
 COPY . .
 
+# Build the production files (very important)
+RUN npm run build
+
 # Expose the desired port (7000)
 EXPOSE 7000
 
-# Start the Express app
-RUN npm run build
+# Start the static file server
 CMD ["serve", "-s", "dist", "-l", "7000", "-b", "/word-add-in"]
+
 
