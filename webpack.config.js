@@ -9,6 +9,8 @@ const urlDev = "https://localhost:7000/";
 //const urlProd = "https://www.contoso.com/"; // CHANGE THIS TO YOUR PRODUCTION DEPLOYMENT LOCATION
 const urlProd = "https://se-staging.ee.ethz.ch/";
 
+const path = require('path');
+
 
 /*
 async function getHttpsOptions() {
@@ -28,8 +30,11 @@ module.exports = async (env, options) => {
       commands: "./src/commands/commands.ts",
     },
     output: {
-      clean: true,
+      path: path.resolve(__dirname, 'dist'),
+      filename: '[name].[contenthash].js',
       publicPath: "/word-add-in/",
+      assetModuleFilename: 'assets/[name][ext][query]',
+      clean: true,
     },
     resolve: {
       extensions: [".ts", ".tsx", ".html", ".js"],
