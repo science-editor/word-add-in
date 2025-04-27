@@ -17,4 +17,5 @@ COPY . .
 EXPOSE 7000
 
 # Start the Express app
-CMD ["npm", "start"]
+RUN npm run build
+CMD ["npx", "serve", "-s", "dist", "-l", "7000"]

@@ -29,6 +29,7 @@ module.exports = async (env, options) => {
     },
     output: {
       clean: true,
+      publicPath: "/word-add-in/",
     },
     resolve: {
       extensions: [".ts", ".tsx", ".html", ".js"],
