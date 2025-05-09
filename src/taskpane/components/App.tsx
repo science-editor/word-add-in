@@ -9,12 +9,14 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
+const GRAPHQL_URL =
+    process.env.NODE_ENV === "production"
+        ? "https://se-staging.ee.ethz.ch/graphql"
+        : "https://localhost:3001/proxy";
+
 // Function to create Apollo Client based on API key
 function createClient(apiKey: string) {
-    const httpLink = createHttpLink({
-        uri: "https://se-staging.ee.ethz.ch/graphql",
-        //uri: "https://localhost:3001/proxy"
-    });
+    const httpLink = createHttpLink({ uri: GRAPHQL_URL });
 
     const authLink = setContext((_, { headers }) => ({
         headers: {
