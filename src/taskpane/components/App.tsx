@@ -13,6 +13,7 @@ import { setContext } from "@apollo/client/link/context";
 function createClient(apiKey: string) {
     const httpLink = createHttpLink({
         uri: "https://se-staging.ee.ethz.ch/graphql",
+        //uri: "https://localhost:3001/proxy"
     });
 
     const authLink = setContext((_, { headers }) => ({
