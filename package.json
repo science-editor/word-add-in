@@ -12,6 +12,7 @@
     "dev_server_port": 7000
   },
   "scripts": {
+    "prebuild": "cp manifest.prod.xml manifest.xml",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
     "dev-server": "webpack serve --mode development",
