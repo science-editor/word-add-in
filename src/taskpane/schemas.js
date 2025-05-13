@@ -79,4 +79,19 @@ const PAGINATED_SEARCH = gql`
     }
 `;
 
-export { DOCUMENT_SEARCH, PAGINATED_SEARCH };
+const ADD_PAPER_TO_ZOTERO = gql`
+    mutation addPaperToZotero(
+        $zoteroCollectionId: String!
+        $paper: metadata!
+    ) {
+        addPaperToZotero(
+            zoteroCollectionId: $zoteroCollectionId
+            paper: $paper
+        ) {
+            status
+            message
+        }
+    }
+`;
+
+export { DOCUMENT_SEARCH, PAGINATED_SEARCH, ADD_PAPER_TO_ZOTERO };
