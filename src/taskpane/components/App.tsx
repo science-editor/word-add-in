@@ -6,8 +6,11 @@ import {
     InMemoryCache,
     ApolloProvider,
     createHttpLink,
+    from
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+import { onError } from "@apollo/client/link/error";
+import { toast } from "react-toastify";
 
 const GRAPHQL_URL =
     process.env.NODE_ENV === "production"
@@ -25,11 +28,35 @@ function createClient(apiKey: string) {
         },
     }));
 
+    // ** Error Link **
+    const errorLink = onError(({ graphQLErrors, networkError }) => {
+        if (graphQLErrors) {
+            graphQLErrors.forEach(({ message, locations, path }) => {
+                console.error(
+                    `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+                );
+                toast.error(`GraphQL error: ${message}`, {
+                    icon: <span role="img" aria-label="error">❌</span>,
+                });
+            });
+        }
+        if (networkError) {
+            console.error(`[Network error]: ${networkError}`);
+            toast.error(`Network error: ${networkError.message}`, {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+        }
+    });
+
+    // Compose links: errorLink first so it sees everything
+    const link = from([errorLink, authLink, httpLink]);
+
     return new ApolloClient({
-        link: authLink.concat(httpLink),
+        link,
         cache: new InMemoryCache({ addTypename: false }),
     });
 }
+
 
 const App = () => {
     const storedKey = localStorage.getItem("x_api_key") || "";
