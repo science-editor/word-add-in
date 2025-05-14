@@ -25,6 +25,13 @@ const DocumentSearch = () => {
     const [addPaperToZotero, { loading, error, data }] = useMutation(ADD_PAPER_TO_ZOTERO)
 
     const handleClickSearchBtn = async () => {
+        if (!localStorage.getItem("x_api_key")){
+            toast.error('Please provide a valid API key first.', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+            return;
+        }
+
         try {
             const result = await getDocuments({
                 variables: {
