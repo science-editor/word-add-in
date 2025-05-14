@@ -32,12 +32,13 @@ function createClient(apiKey: string) {
 }
 
 const App = () => {
-    const inputRef = React.useRef<HTMLInputElement>(null);
     const storedKey = localStorage.getItem("x_api_key") || "";
+    const [apiKey, setApiKey] = React.useState(storedKey);
     const [client, setClient] = React.useState(() => createClient(storedKey));
 
-    const handleSaveClick = () => {
-        const value = inputRef.current?.value || "";
+    const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setApiKey(value);
         localStorage.setItem("x_api_key", value);
         setClient(createClient(value));
         console.log("API key saved and client updated");
@@ -51,11 +52,10 @@ const App = () => {
                     <input
                         className="input"
                         type="text"
-                        defaultValue={storedKey}
+                        value={apiKey}
                         placeholder="Enter your Endoc API key..."
-                        ref={inputRef}
+                        onChange={handleApiKeyChange}
                     />
-                    <button onClick={handleSaveClick}>Save</button>
                 </div>
                 <DocumentSearch />
             </div>
@@ -64,5 +64,3 @@ const App = () => {
 };
 
 export default App;
-
-
