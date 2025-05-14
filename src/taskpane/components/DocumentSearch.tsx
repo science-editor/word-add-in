@@ -2,8 +2,8 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { nanoid } from "nanoid";
-import { insertText } from "../taskpane";
 import { DOCUMENT_SEARCH, PAGINATED_SEARCH, ADD_PAPER_TO_ZOTERO } from '../schemas.js';
+import { toast } from 'react-toastify';
 
 interface Paper {
     title: string;
@@ -15,8 +15,6 @@ interface Paper {
     id_value: number
 }
 
-//type Keyword = string
-
 const DocumentSearch = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
@@ -26,58 +24,69 @@ const DocumentSearch = () => {
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
     const [addPaperToZotero, { loading, error, data }] = useMutation(ADD_PAPER_TO_ZOTERO)
 
-    const handleClickSearchBtn = () => {
-        getDocuments({
-            variables: {
-                ranking_variable: searchTerm,
-                keywords: keywords
-            }
-        })
-            .then(result => {
-                if (result.data) {
-                    getPaperMeta({
-                        variables: {
-                            paper_list: result.data.documentSearch.response.paper_list,
-                            keywords: keywords
-                        }
-                    })
-                        .then(result => {
-                            console.log(result.data.paginatedSearch.response)
-                            const fetchedPapers = result.data.paginatedSearch.response
-                            const convertedPapers = fetchedPapers.map( paper => (
-                                {
-                                    title: paper.Title,
-                                    authors: paper.Author,
-                                    year: paper.PublicationDate.Year,
-                                    collection: "S2AG",
-                                    id_field: "id_int",
-                                    id_type: "int",
-                                    id_value: paper.id_int.toString()
-                                }
-                            ));
-                            setFoundPapers(convertedPapers)
-                        })
+    const handleClickSearchBtn = async () => {
+        try {
+            const result = await getDocuments({
+                variables: {
+                    ranking_variable: searchTerm,
+                    keywords: keywords
                 }
-            })
-            .catch(error => console.error("GraphQL Error:", error));
+            });
+
+            if (result.data) {
+                const metaResult = await getPaperMeta({
+                    variables: {
+                        paper_list: result.data.documentSearch.response.paper_list,
+                        keywords: keywords
+                    }
+                });
+
+                console.log(metaResult.data.paginatedSearch.response);
+
+                const fetchedPapers = metaResult.data.paginatedSearch.response;
+                const convertedPapers = fetchedPapers.map(paper => ({
+                    title: paper.Title,
+                    authors: paper.Author,
+                    year: paper.PublicationDate.Year,
+                    collection: "S2AG",
+                    idField: "id_int",
+                    idType: "int",
+                    idValue: paper.id_int.toString()
+                }));
+
+                setFoundPapers(convertedPapers);
+            }
+        } catch (error) {
+            console.error('GraphQL Error:', error);
+            toast.error('Failed to retrieve papers. Check console for details.', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+        }
     };
 
-    const handleClickZoteroBtn = async (paperIDValue)=> {
+
+    const handleClickZoteroBtn = async (paper)=> {
         try {
             const result = await addPaperToZotero({
                 variables: {
                     zoteroCollectionId: 'Endoc Word Add-In Collection',
                     paper: {
-                        collection: 'S2AG',
-                        id_field: 'id_int',
-                        id_type: 'int',
-                        id_value: paperIDValue,
+                        collection: paper.collection,
+                        id_field: paper.idField,
+                        id_type: paper.idType,
+                        id_value: paper.idValue,
                     },
                 },
             })
             console.log('Zotero response:', result.data.addPaperToZotero)
+            toast.success('Paper succesfully added to your Zotero Library.', {
+                icon: <span role="img" aria-label="warning">✅️</span>,
+            });
         } catch (e) {
-            console.error('Mutation error:', e)
+            console.error('Zotero Mutation error:', e)
+            toast.error('Failed to add paper to Zotero. Check console for details.', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
         }
     }
 
@@ -102,52 +111,10 @@ const DocumentSearch = () => {
     }, []);
 
 
-
-    async function fetchGraphQL() {
-        const url = "https://localhost:3001/proxy"
-        //const url = "https://se-staging.ee.ethz.ch/graphql"
-        const apiKey = "";
-        const query = {
-            query: "mutation {\n" +
-                "  addPaperToZotero(\n" +
-                "    zoteroCollectionId: \"cs_project\"\n" +
-                "    paper: {\n" +
-                "      collection: \"S2AG\"\n" +
-                "      id_field: \"id_int\"\n" +
-                "      id_type: \"int\"\n" +
-                "      id_value: \"7751943\"\n" +
-                "    }\n" +
-                "  ) {\n" +
-                "    status\n" +
-                "    message\n" +
-                "  }\n" +
-                "}"
-        };
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": apiKey
-                },
-                body: JSON.stringify(query)
-            });
-
-            const data = await response.json();
-            console.log(data);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        }
-    }
-
-
     return (
         <>
             <div className="search-container">
-                <button onClick={fetchGraphQL}>Test Query</button>
                 <h3>Discover</h3>
-
                 <fieldset className="fieldset">
                     <legend className="legend">Semantic Search</legend>
                     <input
@@ -176,11 +143,7 @@ const DocumentSearch = () => {
                     <h3>{paper.title}</h3>
                     <p>Authors: {paper.authors.map(author => `${author?.FamilyName}, ${author?.GivenName[0]}. `)}</p>
                     <p>Year: {paper.year}</p>
-                    <p>
-                        {JSON.stringify(paper)}
-                    </p>
-                    <button onClick={() => insertText(paper)}>Insert</button>
-                    <button onClick={() => handleClickZoteroBtn(paper.id_value)}>Add to Zotero</button>
+                    <button onClick={() => handleClickZoteroBtn(paper)}>Add to Zotero</button>
                 </div>
             ))}
         </>

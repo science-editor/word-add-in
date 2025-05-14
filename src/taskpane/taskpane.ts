@@ -1,5 +1,6 @@
 /* global Word console */
 
+/*
 export async function insertText(paper: any) {
   // Write text to the document.fe
   try {
@@ -15,4 +16,4 @@ export async function insertText(paper: any) {
     console.log("Error: " + error);
   }
 }
-
+*/
