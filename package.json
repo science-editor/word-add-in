@@ -30,8 +30,11 @@
   },
   "dependencies": {
     "@apollo/client": "^3.12.8",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@fluentui/react-components": "^9.46.8",
     "@fluentui/react-icons": "^2.0.232",
+    "@mui/material": "^7.1.0",
     "core-js": "^3.36.0",
     "es6-promise": "^4.2.8",
     "graphql": "^16.10.0",

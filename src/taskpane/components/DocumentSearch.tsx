@@ -4,6 +4,8 @@ import { useLazyQuery, useMutation } from "@apollo/client";
 import { nanoid } from "nanoid";
 import { DOCUMENT_SEARCH, PAGINATED_SEARCH, ADD_PAPER_TO_ZOTERO } from '../schemas.js';
 import { toast } from 'react-toastify';
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
 
 interface Paper {
     title: string;
@@ -19,6 +21,7 @@ const DocumentSearch = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
     const [keywords, setKeywords] = useState('');
+    const [loadingBar, setloadingBar] = useState(false);
 
     const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
@@ -31,6 +34,16 @@ const DocumentSearch = () => {
             });
             return;
         }
+
+        if (!searchTerm){
+            toast.error('Please provide at least one search term', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+            return;
+        }
+
+        setFoundPapers(null)
+        setloadingBar(true);
 
         try {
             const result = await getDocuments({
@@ -62,8 +75,10 @@ const DocumentSearch = () => {
                 }));
 
                 setFoundPapers(convertedPapers);
+                setloadingBar(false);
             }
         } catch (error) {
+            setloadingBar(false)
             console.error('GraphQL Error:', error);
             toast.error('Failed to retrieve papers. Check console for details.', {
                 icon: <span role="img" aria-label="warning">⚠️</span>,
@@ -150,6 +165,11 @@ const DocumentSearch = () => {
                 </button>
             </div>
 
+            {loadingBar &&
+                <Box sx={{ width: '100%' , mt: "15px"}}>
+                    <LinearProgress />
+                </Box>
+            }
 
             {foundPapers?.map(paper => (
                 <div className="result" key={nanoid()}>
