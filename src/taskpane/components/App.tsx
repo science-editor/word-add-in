@@ -74,15 +74,15 @@ const App = () => {
     return (
         <ApolloProvider client={client}>
             <div className="root">
-                <h3>Endoc API Key</h3>
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div className="settings-container">
+                    <p className="title">Endoc API Key</p>
                     <input
-                        className="input"
                         type="text"
                         value={apiKey}
                         placeholder="Enter your Endoc API key..."
                         onChange={handleApiKeyChange}
                     />
+                    <hr className="divider" />
                 </div>
                 <DocumentSearch />
             </div>

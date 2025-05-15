@@ -121,9 +121,10 @@ const DocumentSearch = () => {
     return (
         <>
             <div className="search-container">
-                <h3>Discover</h3>
-                <fieldset className="fieldset">
-                    <legend className="legend">Semantic Search</legend>
+                <p className="title">Discover</p>
+
+                <fieldset className="search-fieldset">
+                    <legend className="search-legend">Semantic Search</legend>
                     <input
                         className="input"
                         type="text"
@@ -132,8 +133,9 @@ const DocumentSearch = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </fieldset>
-                <fieldset className="fieldset">
-                    <legend className="legend">Content based filter</legend>
+
+                <fieldset className="search-fieldset">
+                    <legend className="search-legend">Content based filter</legend>
                     <input
                         className="input"
                         type="text"
@@ -142,8 +144,12 @@ const DocumentSearch = () => {
                         onChange={(e) => setKeywords(e.target.value)}
                     />
                 </fieldset>
-                <button className="search-btn" onClick={handleClickSearchBtn}>Search</button>
+
+                <button className="search-btn" onClick={handleClickSearchBtn}>
+                    Search
+                </button>
             </div>
+
 
             {foundPapers?.map(paper => (
                 <div className="result" key={nanoid()}>
