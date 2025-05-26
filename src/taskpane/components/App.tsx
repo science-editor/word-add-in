@@ -11,6 +11,7 @@ import {
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { toast } from "react-toastify";
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 const GRAPHQL_URL =
     process.env.NODE_ENV === "production"
@@ -75,7 +76,10 @@ const App = () => {
         <ApolloProvider client={client}>
             <div className="root">
                 <div className="settings-container">
-                    <p className="title">Endoc API Key</p>
+                    <div>
+                        <p className="title">Endoc API Key</p>
+                        <HelpOutlineIcon />
+                    </div>
                     <input
                         type="text"
                         value={apiKey}

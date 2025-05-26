@@ -2,7 +2,7 @@
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
     <Id>4739026b-536f-440e-80df-76a4c66e6ad4</Id>
     <Version>1.0.0.0</Version>
-    <ProviderName>Contoso</ProviderName>
+    <ProviderName>Endoc</ProviderName>
     <DefaultLocale>en-US</DefaultLocale>
     <DisplayName DefaultValue="Endoc"/>
     <Description DefaultValue="Get started with the Endoc Word Add-In"/>
@@ -39,8 +39,8 @@
                     <FunctionFile resid="Taskpane.Url"/>
                     <ExtensionPoint xsi:type="PrimaryCommandSurface">
                         <OfficeTab id="TabHome">
-                            <Group id="CommandsGroup">
-                                <Label resid="CommandsGroup.Label"/>
+                            <Group id="Research">
+                                <Label resid="Research.Label"/>
                                 <Icon>
                                     <bt:Image size="16" resid="Icon.16x16"/>
                                     <bt:Image size="32" resid="Icon.32x32"/>
@@ -114,13 +114,12 @@
             </bt:Images>
             <bt:Urls>
                 <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://endoc.ethz.ch/"/>
-                <bt:Url id="Commands.Url" DefaultValue="https://localhost:7000/commands.html"/>
-                <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:7000/taskpane.html"/>
+                <bt:Url id="Taskpane.Url" DefaultValue="https://se-staging.ee.ethz.ch/word-add-in/taskpane.html"/>
 
             </bt:Urls>
             <bt:ShortStrings>
                 <bt:String id="GetStarted.Title" DefaultValue="Get started with Endoc!"/>
-                <bt:String id="CommandsGroup.Label" DefaultValue="Commands Group"/>
+                <bt:String id="Research.Label" DefaultValue="Research"/>
                 <bt:String id="TaskpaneButton.Label" DefaultValue="Open Endoc"/>
 
                 <bt:String id="residLabel" DefaultValue="Endoc" />
