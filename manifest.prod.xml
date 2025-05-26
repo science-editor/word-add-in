@@ -6,11 +6,11 @@
     <DefaultLocale>en-US</DefaultLocale>
     <DisplayName DefaultValue="Endoc"/>
     <Description DefaultValue="Get started with the Endoc Word Add-In"/>
-    <IconUrl DefaultValue="https://se-staging.ee.ethz.ch/assets/endoc-logo-32x32.png"/>
-    <HighResolutionIconUrl DefaultValue="https://se-staging.ee.ethz.ch/assets/endoc-logo-64x64.png"/>
+    <IconUrl DefaultValue="https://raw.githubusercontent.com/science-editor/icons/refs/heads/main/endoc-logo-32x32.png"/>
+    <HighResolutionIconUrl DefaultValue="https://raw.githubusercontent.com/science-editor/icons/refs/heads/main/endoc-logo-64x64.png"/>
     <SupportUrl DefaultValue="https://endoc.ethz.ch/contact"/>
     <AppDomains>
-        <AppDomain>https://endoc.ethz.ch</AppDomain>
+        <AppDomain>https://se-staging.ee.ethz.ch</AppDomain>
     </AppDomains>
     <Hosts>
         <Host Name="Document"/>
@@ -108,9 +108,9 @@
         </Hosts>
         <Resources>
             <bt:Images>
-                <bt:Image id="Icon.16x16" DefaultValue="https://se-staging.ee.ethz.ch/assets/endoc-logo-16x16.png"/>
-                <bt:Image id="Icon.32x32" DefaultValue="https://se-staging.ee.ethz.ch/assets/endoc-logo-32x32.png"/>
-                <bt:Image id="Icon.80x80" DefaultValue="https://se-staging.ee.ethz.ch/assets/endoc-logo-80x80.png"/>
+                <bt:Image id="Icon.16x16" DefaultValue="https://raw.githubusercontent.com/science-editor/icons/refs/heads/main/endoc-logo-16x16.png"/>
+                <bt:Image id="Icon.32x32" DefaultValue="https://raw.githubusercontent.com/science-editor/icons/refs/heads/main/endoc-logo-32x32.png"/>
+                <bt:Image id="Icon.80x80" DefaultValue="https://raw.githubusercontent.com/science-editor/icons/refs/heads/main/endoc-logo-80x80.png"/>
             </bt:Images>
             <bt:Urls>
                 <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://endoc.ethz.ch/"/>
