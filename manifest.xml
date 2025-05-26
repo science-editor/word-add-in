@@ -5,12 +5,12 @@
   <ProviderName>Contoso</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Endoc"/>
-  <Description DefaultValue="A template to get started."/>
-  <IconUrl DefaultValue="https://localhost:7000/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:7000/assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://www.contoso.com/help"/>
+  <Description DefaultValue="Get started with the Endoc Word Add-In"/>
+  <IconUrl DefaultValue="https://localhost:7000/assets/endoc-logo-32x32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:7000/assets/endoc-logo-64x64.png"/>
+  <SupportUrl DefaultValue="https://endoc.ethz.ch/contact"/>
   <AppDomains>
-    <AppDomain>https://www.contoso.com</AppDomain>
+    <AppDomain>https://endoc.ethz.ch</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Document"/>
@@ -67,7 +67,7 @@
             </OfficeTab>
           </ExtensionPoint>
 
-          <!-- ✅ Corrected Context Menu ExtensionPoint -->
+          <!-- ✅ Context Menu ExtensionPoint -->
           <ExtensionPoint xsi:type="ContextMenu">
             <OfficeMenu id="ContextMenuText">
               <Control xsi:type="Menu" id="TestMenu2">
@@ -83,9 +83,9 @@
                 </Icon>
                 <Items>
                   <Item id="showGallery2">
-                    <Label resid="residLabel"/>
+                    <Label resid="residLabel2"/>
                     <Supertip>
-                      <Title resid="residLabel" />
+                      <Title resid="residLabel2" />
                       <Description resid="residToolTip" />
                     </Supertip>
                     <Icon>
@@ -103,18 +103,17 @@
             </OfficeMenu>
           </ExtensionPoint>
 
-
         </DesktopFormFactor>
       </Host>
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:7000/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:7000/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:7000/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:7000/assets/endoc-logo-16x16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:7000/assets/endoc-logo-32x32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:7000/assets/endoc-logo-80x80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812"/>
+        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://endoc.ethz.ch/"/>
         <bt:Url id="Commands.Url" DefaultValue="https://localhost:7000/commands.html"/>
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:7000/taskpane.html"/>
 
@@ -124,14 +123,14 @@
         <bt:String id="CommandsGroup.Label" DefaultValue="Commands Group"/>
         <bt:String id="TaskpaneButton.Label" DefaultValue="Open Endoc"/>
 
-        <bt:String id="residLabel" DefaultValue="Endoc">
-        </bt:String>
+        <bt:String id="residLabel" DefaultValue="Endoc" />
+        <bt:String id="residLabel2" DefaultValue="Semantic Search" />
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="GetStarted.Description" DefaultValue="Endoc Add-In loaded successfully"/>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to open Endoc"/>
 
-        <bt:String id="residToolTip" DefaultValue="Get data for your document.">
+        <bt:String id="residToolTip" DefaultValue="Use selection to perform Semantic Search with Endoc.">
         </bt:String>
       </bt:LongStrings>
     </Resources>
