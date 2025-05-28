@@ -1,0 +1,52 @@
+name: Deploy Services to production VM
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: se-production
+    steps:
+      - name: Update repositories
+        run: |
+          cd /var/www/front-end
+          git fetch origin
+          git reset --hard origin/master
+
+          cd /var/www/back-end
+          git fetch origin
+          git reset --hard origin/master
+
+          cd /var/www/api-gateway
+          git fetch origin
+          git reset --hard origin/master
+
+          cd /var/www/external-models
+          git fetch origin
+          git reset --hard origin/master
+
+          cd /var/www/export-service
+          git fetch origin
+          git reset --hard origin/main
+
+          cd /var/www/orchestration
+          git fetch origin
+          git reset --hard origin/main
+          
+          cd /var/www/word-add-in
+          git fetch origin
+          git reset --hard origin/main
+
+      - name: Run Docker Compose
+        run: |
+          cd /var/www/orchestration
+          docker-compose down
+          docker-compose build
+          export ENVIRONMENT=production
+          docker-compose up -d
