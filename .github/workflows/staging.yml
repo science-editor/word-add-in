@@ -13,8 +13,6 @@ jobs:
   deploy:
     runs-on: se-staging
     steps:
-      - name: Trust word-add-in directory
-        run: git config --global --add safe.directory /var/www/word-add-in
 
       - name: Update repositories
         run: |
