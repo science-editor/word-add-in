@@ -15,7 +15,7 @@ import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-// some comment to test
+// some test comment
 
 const GRAPHQL_URL =
     process.env.NODE_ENV === "production"
