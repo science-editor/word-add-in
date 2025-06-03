@@ -1,7 +1,3 @@
-# Hosting
-
-The word-add-in is hosted on: https://se-staging.ee.ethz.ch/word-add-in/taskpane.html
-
 # Sideload into office on the web
 
 1. Download the [manifest.prod.xml](https://github.com/science-editor/word-add-in/blob/main/manifest.prod.xml) 
