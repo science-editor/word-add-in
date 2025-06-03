@@ -15,6 +15,8 @@ import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
+// some test comment
+
 const GRAPHQL_URL =
     process.env.NODE_ENV === "production"
         ? "https://se-staging.ee.ethz.ch/graphql"

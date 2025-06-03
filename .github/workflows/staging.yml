@@ -13,6 +13,7 @@ jobs:
   deploy:
     runs-on: se-staging
     steps:
+
       - name: Update repositories
         run: |
           cd /var/www/front-end
