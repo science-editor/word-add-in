@@ -6,7 +6,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 
 const urlDev = "https://localhost:7000/";
-const urlProd = "https://se-staging.ee.ethz.ch/";
+const urlProd = "https://endoc.ethz.ch/";
 
 async function getHttpsOptions() {
   const httpsOptions = await devCerts.getHttpsServerOptions();
