@@ -19,7 +19,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 const GRAPHQL_URL =
     process.env.NODE_ENV === "production"
-        ? "https://se-staging.ee.ethz.ch/graphql"
+        ? "https://endoc.ethz.ch/graphql"
         : "https://localhost:3001/proxy";
 
 // Function to create Apollo Client based on API key
@@ -67,7 +67,7 @@ const App = () => {
     const storedKey = localStorage.getItem("x_api_key") || "";
     const [apiKey, setApiKey] = React.useState(storedKey);
     const [client, setClient] = React.useState(() => createClient(storedKey));
-    const endocURL = "https://se-staging.ee.ethz.ch/";
+    const endocURL = "https://endoc.ethz.ch/";
 
     const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;

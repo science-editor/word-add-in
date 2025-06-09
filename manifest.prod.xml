@@ -10,7 +10,7 @@
     <HighResolutionIconUrl DefaultValue="https://raw.githubusercontent.com/science-editor/icons/refs/heads/main/endoc-logo-64x64.png"/>
     <SupportUrl DefaultValue="https://endoc.ethz.ch/contact"/>
     <AppDomains>
-        <AppDomain>https://se-staging.ee.ethz.ch</AppDomain>
+        <AppDomain>https://endoc.ethz.ch</AppDomain>
     </AppDomains>
     <Hosts>
         <Host Name="Document"/>
@@ -21,7 +21,7 @@
         </Sets>
     </Requirements>
     <DefaultSettings>
-        <SourceLocation DefaultValue="https://se-staging.ee.ethz.ch/word-add-in/taskpane.html"/>
+        <SourceLocation DefaultValue="https://endoc.ethz.ch/word-add-in/taskpane.html"/>
     </DefaultSettings>
     <Permissions>ReadWriteDocument</Permissions>
     <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -114,7 +114,7 @@
             </bt:Images>
             <bt:Urls>
                 <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://endoc.ethz.ch/"/>
-                <bt:Url id="Taskpane.Url" DefaultValue="https://se-staging.ee.ethz.ch/word-add-in/taskpane.html"/>
+                <bt:Url id="Taskpane.Url" DefaultValue="https://endoc.ethz.ch/word-add-in/taskpane.html"/>
 
             </bt:Urls>
             <bt:ShortStrings>
