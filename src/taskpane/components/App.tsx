@@ -11,7 +11,6 @@ import {
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { toast } from "react-toastify";
-import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import TutorialWindow from "./TutotrialWindow";
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -95,20 +94,21 @@ const App = () => {
                     handleApiKeyChange={handleApiKeyChange}
                 />
 
-                    <div style={{ display: "flex", justifyContent: "flex-end"}}>
-                        <IconButton
-                            aria-label="Endoc API Key help"
-                            size="medium"
-                            sx={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: "50%"
-                            }}
-                            onClick={openTutorialWindow}
-                        >
-                            <SettingsIcon fontSize="inherit" />
-                        </IconButton>
-                    </div>
+                <div style={{ display: "flex", justifyContent: "flex-end"}}>
+                    <IconButton
+                        className={apiKey ? '' : 'attention-pulse'}
+                        aria-label="Endoc API Key help"
+                        size="medium"
+                        sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: "50%"
+                        }}
+                        onClick={openTutorialWindow}
+                    >
+                        <SettingsIcon fontSize="inherit" />
+                    </IconButton>
+                </div>
 
                 <DocumentSearch
                     apiKey={apiKey}
