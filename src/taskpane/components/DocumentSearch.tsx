@@ -223,8 +223,6 @@ const DocumentSearch = () => {
             </Dialog>
 
             <div className="search-container">
-                <p className="title">Discover</p>
-
                 <fieldset className="search-fieldset">
                     <legend className="search-legend">Semantic Search</legend>
                     <input
