@@ -118,6 +118,11 @@ p{
     background-color: #2563eb; /* Blue-600 */
 }
 
+.search-btn:disabled{
+    background-color: #a8a8a8;
+    cursor: default;
+    transition: none;
+}
 
 
 /* +++++++++++++++++++++++++++++++++++++++++++++++ Papers Container +++++++++++++++++++++++++++++++++++++++++++++++  */

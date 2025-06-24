@@ -32,7 +32,7 @@ interface Paper {
     id_value: number
 }
 
-const DocumentSearch = () => {
+const DocumentSearch = ({apiKey}) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
     const [keywords, setKeywords] = useState('');
@@ -245,9 +245,35 @@ const DocumentSearch = () => {
                     />
                 </fieldset>
 
-                <button className="search-btn" onClick={handleClickSearchBtn}>
-                    Search
-                </button>
+                {!apiKey.trim() ? (
+                    <Tooltip
+                        title={'Add a valid Endoc API Key in the settings section before performing searches.'}
+                        componentsProps={{
+                            tooltip: {
+                                sx: {
+                                    fontSize: '1.2rem',
+                                    lineHeight: 1.4,
+                                }
+                            }
+                        }}
+                    >
+                        <button
+                            className="search-btn"
+                            onClick={handleClickSearchBtn}
+                            disabled={!apiKey.trim()}
+                        >
+                            Search
+                        </button>
+                    </Tooltip>
+                ) : (
+                    <button
+                        className="search-btn"
+                        onClick={handleClickSearchBtn}
+                        disabled={!apiKey.trim()}
+                    >
+                        Search
+                    </button>
+                )}
             </div>
 
             {loadingBar &&

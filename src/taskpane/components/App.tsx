@@ -110,7 +110,9 @@ const App = () => {
                         </IconButton>
                     </div>
 
-                <DocumentSearch />
+                <DocumentSearch
+                    apiKey={apiKey}
+                />
             </div>
         </ApolloProvider>
     );

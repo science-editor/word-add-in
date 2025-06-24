@@ -143,20 +143,7 @@ function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKe
                     </ListItem>
                     <ListItem disableGutters>
                         <ListItemText
-                            primary={
-                                <>
-                                    2. Connect your{" "}
-                                    <Link
-                                        href={zoteroURL}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        sx={{ cursor: 'pointer' }}
-                                    >
-                                        Zotero account
-                                    </Link>{" "}
-                                    to Endoc.
-                                </>
-                            }
+                            primary="Connect your Zotero Account to Endoc."
                         />
                     </ListItem>
                     <img
