@@ -69,7 +69,7 @@ function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKe
                     </ListItem>
                     <div style={{display: "flex", marginBottom: "20px"}}>
                         <img
-                            src="/assets/tutorial_account_settings.png"
+                            src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_account_settings.png"
                             alt="Account Settings"
                             height={200}
                             style={{
@@ -79,7 +79,7 @@ function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKe
                             }}
                         />
                         <img
-                            src="/assets/tutorial_api_key.png"
+                            src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_api_key.png"
                             alt="Get Api Key"
                             height={200}
                             style={{
@@ -143,11 +143,11 @@ function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKe
                     </ListItem>
                     <ListItem disableGutters>
                         <ListItemText
-                            primary="Connect your Zotero Account to Endoc."
+                            primary="2. Connect your Zotero Account to Endoc."
                         />
                     </ListItem>
                     <img
-                        src="/assets/tutorial_zotero.png"
+                        src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_zotero.png"
                         alt="Connect to Zotero"
                         height={160}
                         style={{
