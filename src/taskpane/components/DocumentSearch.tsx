@@ -14,6 +14,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import CloseIcon from '@mui/icons-material/Close';
+import GoogleScholarChip from "./GoogleScholarChip";
+import DOIChip from "./DOIChip";
 
 const loremIpsum = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
 
@@ -24,12 +26,13 @@ interface Paper {
     abstract: string;
     fullPaper: string
     collection: string;
+    DOI: string;
     id_field: number;
     id_type: number;
     id_value: number
 }
 
-const DocumentSearch = () => {
+const DocumentSearch = ({apiKey}) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
     const [keywords, setKeywords] = useState('');
@@ -84,6 +87,7 @@ const DocumentSearch = () => {
                     abstract: paper.Content.Abstract,
                     fullPaper: loremIpsum,
                     collection: "S2AG",
+                    DOI: paper.DOI,
                     idField: "id_int",
                     idType: "int",
                     idValue: paper.id_int.toString()
@@ -159,6 +163,7 @@ const DocumentSearch = () => {
                 onClose={() => setExpandedPaper(null)}
                 fullWidth
                 maxWidth="md"
+                scroll="body"
             >
                 <DialogActions>
                     <IconButton
@@ -172,7 +177,7 @@ const DocumentSearch = () => {
                         onClick={() => handleClickZoteroBtn(expandedPaper)}
                     >
                         <img
-                            src="/assets/zotero-icon.ico"
+                            src='https://raw.githubusercontent.com/science-editor/word-add-in/refs/heads/main/assets/zotero-icon.ico'
                             alt="Add to Zotero"
                             width={20}
                             height={20}
@@ -202,6 +207,12 @@ const DocumentSearch = () => {
                         )}
                     </p>
                     <p>Year: {expandedPaper?.year}</p>
+                    <DOIChip
+                        paper={expandedPaper}
+                    />
+                    <GoogleScholarChip
+                        paper={expandedPaper}
+                    />
                 </DialogContent>
                 <DialogContent dividers>
                     <p>{expandedPaper?.abstract ? expandedPaper.abstract : 'Abstract not available for this paper.'} </p>
@@ -212,8 +223,6 @@ const DocumentSearch = () => {
             </Dialog>
 
             <div className="search-container">
-                <p className="title">Discover</p>
-
                 <fieldset className="search-fieldset">
                     <legend className="search-legend">Semantic Search</legend>
                     <input
@@ -236,9 +245,35 @@ const DocumentSearch = () => {
                     />
                 </fieldset>
 
-                <button className="search-btn" onClick={handleClickSearchBtn}>
-                    Search
-                </button>
+                {!apiKey.trim() ? (
+                    <Tooltip
+                        title={'Add a valid Endoc API Key in the settings section before performing searches.'}
+                        componentsProps={{
+                            tooltip: {
+                                sx: {
+                                    fontSize: '1.2rem',
+                                    lineHeight: 1.4,
+                                }
+                            }
+                        }}
+                    >
+                        <button
+                            className="search-btn"
+                            onClick={handleClickSearchBtn}
+                            disabled={!apiKey.trim()}
+                        >
+                            Search
+                        </button>
+                    </Tooltip>
+                ) : (
+                    <button
+                        className="search-btn"
+                        onClick={handleClickSearchBtn}
+                        disabled={!apiKey.trim()}
+                    >
+                        Search
+                    </button>
+                )}
             </div>
 
             {loadingBar &&
@@ -315,7 +350,7 @@ const DocumentSearch = () => {
                                     onClick={() => handleClickZoteroBtn(paper)}
                                 >
                                     <img
-                                        src="/assets/zotero-icon.ico"
+                                        src='https://raw.githubusercontent.com/science-editor/word-add-in/refs/heads/main/assets/zotero-icon.ico'
                                         alt="Add to Zotero"
                                         width={20}
                                         height={20}

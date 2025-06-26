@@ -11,11 +11,9 @@ import {
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { toast } from "react-toastify";
-import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-
-// another test comment
+import TutorialWindow from "./TutotrialWindow";
+import SettingsIcon from '@mui/icons-material/Settings';
 
 const GRAPHQL_URL =
     process.env.NODE_ENV === "production"
@@ -68,6 +66,7 @@ const App = () => {
     const [apiKey, setApiKey] = React.useState(storedKey);
     const [client, setClient] = React.useState(() => createClient(storedKey));
     const endocURL = "https://endoc.ethz.ch/";
+    const [showTutorial, setShowTutorial] = React.useState(false);
 
     const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -77,51 +76,43 @@ const App = () => {
         console.log("API key saved and client updated");
     };
 
-    const handleClickHelpIcon = () => {
-        window.open(endocURL, "_blank", "noopener,noreferrer");
+    const openTutorialWindow = () => {
+        setShowTutorial(true)
     };
 
+    const closeTutorialWindow = () => {
+        setShowTutorial(false);
+    }
 
     return (
         <ApolloProvider client={client}>
             <div className="root">
-                <div className="settings-container">
-                    <div style={{ display: "flex", alignItems: "center"}}>
-                        <p className="title">Endoc API Key</p>
-                        <Tooltip
-                            title="Create an Endoc account, then navigate to Account Settings to generate your Developer API Key and insert it here. Under Account Settings, also connect your Zotero Account."
-                            componentsProps={{
-                                tooltip: {
-                                    sx: {
-                                        fontSize: '1.2rem',
-                                        lineHeight: 1.4,
-                                    }
-                                }
-                            }}
-                        >
-                            <IconButton
-                                aria-label="Endoc API Key help"
-                                size="medium"
-                                sx={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: "50%"
-                                }}
-                                onClick={handleClickHelpIcon}
-                            >
-                                <OpenInNewIcon fontSize="inherit" />
-                            </IconButton>
-                        </Tooltip>
-                    </div>
-                    <input
-                        type="text"
-                        value={apiKey}
-                        placeholder="Enter your Endoc API key..."
-                        onChange={handleApiKeyChange}
-                    />
-                    <hr className="divider" />
+                <TutorialWindow
+                    showTutorial={showTutorial}
+                    closeTutorialWindow={closeTutorialWindow}
+                    apiKey={apiKey}
+                    handleApiKeyChange={handleApiKeyChange}
+                />
+
+                <div style={{ display: "flex", justifyContent: "flex-end"}}>
+                    <IconButton
+                        className={apiKey ? '' : 'attention-pulse'}
+                        aria-label="Endoc API Key help"
+                        size="medium"
+                        sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: "50%"
+                        }}
+                        onClick={openTutorialWindow}
+                    >
+                        <SettingsIcon fontSize="inherit" />
+                    </IconButton>
                 </div>
-                <DocumentSearch />
+
+                <DocumentSearch
+                    apiKey={apiKey}
+                />
             </div>
         </ApolloProvider>
     );

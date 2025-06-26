@@ -118,6 +118,11 @@ p{
     background-color: #2563eb; /* Blue-600 */
 }
 
+.search-btn:disabled{
+    background-color: #a8a8a8;
+    cursor: default;
+    transition: none;
+}
 
 
 /* +++++++++++++++++++++++++++++++++++++++++++++++ Papers Container +++++++++++++++++++++++++++++++++++++++++++++++  */
@@ -137,3 +142,37 @@ p{
     margin-left: 20px;
 }
 
+
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++ Animations +++++++++++++++++++++++++++++++++++++++++++++++++++  */
+/* pulse ring grows and fades out */
+@keyframes attention-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.attention-pulse {
+    position: relative;
+    display: inline-flex;
+}
+
+.attention-pulse::after {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;      /* center on the element */
+    width: 100%;              /* start same size as wrapper */
+    height: 100%;
+    border: 2px solid rgba(244, 67, 54, 0.7);
+    border-radius: 50%;
+    pointer-events: none;     /* clicks go through */
+    /* initial placement & visibility */
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+    /* animate with smooth GPU-accelerated properties */
+    animation: attention-pulse 2s ease-out infinite;
+}
