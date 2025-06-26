@@ -177,7 +177,7 @@ const DocumentSearch = ({apiKey}) => {
                         onClick={() => handleClickZoteroBtn(expandedPaper)}
                     >
                         <img
-                            src="/assets/zotero-icon.ico"
+                            src='https://raw.githubusercontent.com/science-editor/word-add-in/refs/heads/main/assets/zotero-icon.ico'
                             alt="Add to Zotero"
                             width={20}
                             height={20}
@@ -350,7 +350,7 @@ const DocumentSearch = ({apiKey}) => {
                                     onClick={() => handleClickZoteroBtn(paper)}
                                 >
                                     <img
-                                        src="/assets/zotero-icon.ico"
+                                        src='https://raw.githubusercontent.com/science-editor/word-add-in/refs/heads/main/assets/zotero-icon.ico'
                                         alt="Add to Zotero"
                                         width={20}
                                         height={20}
