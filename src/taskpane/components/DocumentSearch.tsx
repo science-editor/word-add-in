@@ -119,10 +119,17 @@ const DocumentSearch = ({apiKey}) => {
                     },
                 },
             })
-            console.log('Zotero response:', result.data.addPaperToZotero)
-            toast.success('Paper succesfully added to your Zotero Library.', {
-                icon: <span role="img" aria-label="warning">✅️</span>,
-            });
+            console.log('Zotero responseEE:', result.data.addPaperToZotero)
+            if (result.data.addPaperToZotero.status === 'success'){
+                toast.success('Paper succesfully added to your Zotero Library.', {
+                    icon: <span role="img" aria-label="warning">✅️</span>,
+                });
+            } else {
+                toast.error('Paper could not be added because your Zotero Account ist not connected to your Endoc Account.', {
+                    icon: <span role="img" aria-label="warning">⚠️</span>,
+                });
+            }
+
         } catch (e) {
             console.error('Zotero Mutation error:', e)
             toast.error('Failed to add paper to Zotero. Check console for details.', {
