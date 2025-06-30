@@ -17,8 +17,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import GoogleScholarChip from "./GoogleScholarChip";
 import DOIChip from "./DOIChip";
 
-const loremIpsum = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
-
 interface Paper {
     title: string;
     authors: any[];
@@ -85,7 +83,7 @@ const DocumentSearch = ({apiKey}) => {
                     authors: paper.Author,
                     year: paper.PublicationDate.Year,
                     abstract: paper.Content.Abstract,
-                    fullPaper: loremIpsum,
+                    fullPaper: null, //SINGLE_PAPER_QUERY
                     collection: "S2AG",
                     DOI: paper.DOI,
                     idField: "id_int",
@@ -119,10 +117,17 @@ const DocumentSearch = ({apiKey}) => {
                     },
                 },
             })
-            console.log('Zotero response:', result.data.addPaperToZotero)
-            toast.success('Paper succesfully added to your Zotero Library.', {
-                icon: <span role="img" aria-label="warning">✅️</span>,
-            });
+            console.log('Zotero responseEE:', result.data.addPaperToZotero)
+            if (result.data.addPaperToZotero.status === 'success'){
+                toast.success('Paper succesfully added to your Zotero Library.', {
+                    icon: <span role="img" aria-label="warning">✅️</span>,
+                });
+            } else {
+                toast.error('Paper could not be added because your Zotero Account ist not connected to your Endoc Account.', {
+                    icon: <span role="img" aria-label="warning">⚠️</span>,
+                });
+            }
+
         } catch (e) {
             console.error('Zotero Mutation error:', e)
             toast.error('Failed to add paper to Zotero. Check console for details.', {
