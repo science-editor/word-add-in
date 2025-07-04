@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { nanoid } from "nanoid";
-import { DOCUMENT_SEARCH, PAGINATED_SEARCH, ADD_PAPER_TO_ZOTERO } from '../schemas.js';
+import { DOCUMENT_SEARCH, PAGINATED_SEARCH, SINGLE_PAPER_QUERY, ADD_PAPER_TO_ZOTERO } from "../schemas.js";
 import { toast } from 'react-toastify';
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -39,6 +39,7 @@ const DocumentSearch = ({apiKey}) => {
 
     const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
+    const [getPaperContent, { loading: loadingContent, error: errorContent, data: dataContent }] = useLazyQuery(SINGLE_PAPER_QUERY);
     const [addPaperToZotero, { loading, error, data }] = useMutation(ADD_PAPER_TO_ZOTERO)
 
     const handleClickSearchBtn = async () => {
@@ -82,7 +83,7 @@ const DocumentSearch = ({apiKey}) => {
                     title: paper.Title,
                     authors: paper.Author,
                     year: paper.PublicationDate.Year,
-                    abstract: paper.Content.Abstract,
+                    abstract: null, //SINGLE_PAPER_QUERY
                     fullPaper: null, //SINGLE_PAPER_QUERY
                     collection: "S2AG",
                     DOI: paper.DOI,
@@ -136,9 +137,38 @@ const DocumentSearch = ({apiKey}) => {
         }
     }
 
-    const handleClickReadPaper = (paper) => {
-        setExpandedPaper(paper)
-    }
+    const handleClickReadPaper = async (paper) => {
+        try {
+            const contentResult = await getPaperContent({
+                variables: {
+                    paper_id: {
+                        collection: paper.collection,
+                        id_field: paper.idField,
+                        id_type: paper.idType,
+                        id_value: paper.idValue,
+                    }
+                }
+            });
+
+            const paperContent = contentResult.data.singlePaper.response.Content
+
+            const abstract = paperContent.Abstract;
+            const fullPaper = paperContent.Fullbody;
+
+            const paperWithContent = {
+                ...paper,
+                abstract,
+                fullPaper
+            };
+
+            setExpandedPaper(paperWithContent);
+        } catch (error) {
+            console.error('Error loading paper content:', error);
+            toast.error('Failed to load paper content. Please try again later or check console for details.', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+        }
+    };
 
 
     useEffect(() => {

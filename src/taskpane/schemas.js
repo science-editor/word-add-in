@@ -79,6 +79,94 @@ const PAGINATED_SEARCH = gql`
     }
 `;
 
+
+const SINGLE_PAPER_QUERY = gql`
+    query singlePaper($paper_id: MetadataInput!) {
+        singlePaper(paper_id: $paper_id) {
+            status
+            message
+            response {
+                _id
+                id_int
+                DOI
+                Title
+                Content {
+                    Abstract
+                    Abstract_Parsed {
+                        section_id
+                        section_title
+                        section_text {
+                            paragraph_id
+                            paragraph_text {
+                                sentence_id
+                                sentence_text
+                                sentence_similarity
+                                cite_spans {
+                                    start
+                                    end
+                                    text
+                                    ref_id
+                                }
+                            }
+                        }
+                    }
+                    Fullbody_Parsed {
+                        section_id
+                        section_title
+                        section_text {
+                            paragraph_id
+                            paragraph_text {
+                                sentence_id
+                                sentence_text
+                                sentence_similarity
+                                cite_spans {
+                                    start
+                                    end
+                                    text
+                                    ref_id
+                                }
+                            }
+                        }
+                    }
+                    Fullbody
+                }
+                Author {
+                    FamilyName
+                    GivenName
+                }
+                Venue
+                PublicationDate {
+                    Year
+                    Month
+                    Day
+                    Name
+                }
+                Reference {
+                    Title
+                    Author {
+                        FamilyName
+                        GivenName
+                    }
+                    Venue
+                    PublicationDate {
+                        Year
+                        Month
+                        Day
+                        Name
+                    }
+                    ReferenceText
+                    PaperID {
+                        collection
+                        id_field
+                        id_type
+                        id_value
+                    }
+                }
+            }
+        }
+    }
+`;
+
 const ADD_PAPER_TO_ZOTERO = gql`
     mutation addPaperToZotero(
         $zoteroCollectionId: String!
@@ -94,4 +182,4 @@ const ADD_PAPER_TO_ZOTERO = gql`
     }
 `;
 
-export { DOCUMENT_SEARCH, PAGINATED_SEARCH, ADD_PAPER_TO_ZOTERO };
+export { DOCUMENT_SEARCH, PAGINATED_SEARCH, SINGLE_PAPER_QUERY, ADD_PAPER_TO_ZOTERO };
