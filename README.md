@@ -4,11 +4,11 @@
 
 2. Open [Office on the web](https://m365.cloud.microsoft/). Open a document in Word
 
-3. Select Home > Add-ins, then select More Settings.
+3. Navigate to "Home" > "..." > "Add-ins" > "Advanced...".
 
-4. On the Office Add-ins dialog, select Upload My Add-in.
+4. In the Office Add-ins dialog, select Upload My Add-in.
 
-5. Browse to the add-in manifest file, and then select Upload.
+5. Browse to the add-in manifest file you downloaded in step 1, and then select Upload.
 
 ![img.png](assets/add-in-upload-window.png)
 
