@@ -167,6 +167,16 @@ const SINGLE_PAPER_QUERY = gql`
     }
 `;
 
+const KEYWORD_SUGGESTIONS = gql`
+    query keywordSuggestions($keyword: String!) {
+        keywordSuggestions(keyword: $keyword) {
+            status
+            message
+            response
+        }
+    }
+`;
+
 const ADD_PAPER_TO_ZOTERO = gql`
     mutation addPaperToZotero(
         $zoteroCollectionId: String!
@@ -182,4 +192,4 @@ const ADD_PAPER_TO_ZOTERO = gql`
     }
 `;
 
-export { DOCUMENT_SEARCH, PAGINATED_SEARCH, SINGLE_PAPER_QUERY, ADD_PAPER_TO_ZOTERO };
+export { DOCUMENT_SEARCH, PAGINATED_SEARCH, SINGLE_PAPER_QUERY, KEYWORD_SUGGESTIONS, ADD_PAPER_TO_ZOTERO };

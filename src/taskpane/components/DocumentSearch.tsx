@@ -16,6 +16,7 @@ import DialogActions from '@mui/material/DialogActions';
 import CloseIcon from '@mui/icons-material/Close';
 import GoogleScholarChip from "./GoogleScholarChip";
 import DOIChip from "./DOIChip";
+import KeywordFilter from "./KeywordFilter";
 
 interface Paper {
     title: string;
@@ -33,14 +34,17 @@ interface Paper {
 const DocumentSearch = ({apiKey}) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
-    const [keywords, setKeywords] = useState('');
     const [loadingBar, setloadingBar] = useState(false);
     const [expandedPaper, setExpandedPaper] = useState<Paper | null>(null);
-
+    const [keywords, setKeywords] = useState<string[]>([]);
     const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
     const [getPaperContent, { loading: loadingContent, error: errorContent, data: dataContent }] = useLazyQuery(SINGLE_PAPER_QUERY);
     const [addPaperToZotero, { loading, error, data }] = useMutation(ADD_PAPER_TO_ZOTERO)
+
+    const handleKeywordsChange = (newKeywords: string[]) => {
+        setKeywords(newKeywords);
+    };
 
     const handleClickSearchBtn = async () => {
         if (!localStorage.getItem("x_api_key")){
@@ -269,16 +273,10 @@ const DocumentSearch = ({apiKey}) => {
                     />
                 </fieldset>
 
-                <fieldset className="search-fieldset">
-                    <legend className="search-legend">Content based filter</legend>
-                    <input
-                        className="input"
-                        type="text"
-                        placeholder="Enter keywords..."
-                        value={keywords}
-                        onChange={(e) => setKeywords(e.target.value)}
-                    />
-                </fieldset>
+                <KeywordFilter
+                    selectedKeywords={keywords}
+                    onKeywordsChange={handleKeywordsChange}
+                />
 
                 {!apiKey.trim() ? (
                     <Tooltip
