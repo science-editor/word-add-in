@@ -166,7 +166,7 @@ function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKe
                 <hr className="divider" />
 
                 <Typography variant="h6" gutterBottom>
-                    Install Zotero Word Plugin
+                    Access your Endoc Zotero Collection
                 </Typography>
                 <List>
                     <ListItem disableGutters>
@@ -214,7 +214,7 @@ function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKe
                     <img
                         src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_zotero_collection.png"
                         alt="Cite Paper from Zotero Collection"
-                        height={160}
+                        height={320}
                         style={{
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                             borderRadius: '4px',
