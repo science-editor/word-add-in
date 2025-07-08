@@ -70,7 +70,7 @@ export default function KeywordFilter({
     return (
         <Autocomplete
             multiple
-            id="chip-autocomplete"
+            id="keyword-filter"
             options={suggestions}
             value={selectedKeywords}
             onChange={handleValueChange}
@@ -81,6 +81,7 @@ export default function KeywordFilter({
             open={isOpen}
             loadingText=""
             noOptionsText=""
+            popupIcon={null}
             renderTags={(selected, getTagProps) =>
                 selected.map((option, index) => (
                     <Chip
@@ -95,8 +96,8 @@ export default function KeywordFilter({
                 <TextField
                     {...params}
                     variant="outlined"
-                    label="Select items"
-                    placeholder="Start typing..."
+                    label="Keyword Filter"
+                    placeholder={selectedKeywords.length > 0 ? "" : "Constrain your search with keywords"}
                     error={!!error}
                     helperText={error ? error.message : ""}
                 />
