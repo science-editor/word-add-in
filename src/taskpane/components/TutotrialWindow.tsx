@@ -14,7 +14,8 @@ import TextField from "@mui/material/TextField";
 
 function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKeyChange }) {
     const endocURL = "https://endoc.ethz.ch/";
-    const zoteroURL = "https://www.zotero.org/";
+    const zoteroDownloadURL = "https://www.zotero.org/download/";
+    const zoteroPluginURL = "https://www.zotero.org/support/word_processor_plugin_installation"
 
     return (
         <Dialog
@@ -160,6 +161,65 @@ function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKe
                             primary="3. You will now be able to add papers to your Zotero Collection directly through the Word-add-in."
                         />
                     </ListItem>
+                </List>
+
+                <hr className="divider" />
+
+                <Typography variant="h6" gutterBottom>
+                    Install Zotero Word Plugin
+                </Typography>
+                <List>
+                    <ListItem disableGutters>
+                        <ListItemText
+                            primary={
+                                <>
+                                    1. If you haven't already, install {" "}
+                                    <Link
+                                        href={zoteroDownloadURL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ cursor: 'pointer' }}
+                                    >
+                                        Zotero
+                                    </Link>{" "}
+                                    on your Computer. I it will automatically come with the Zotero Word Plugin.
+                                </>
+                            }
+                        />
+                    </ListItem>
+                    <ListItem disableGutters>
+                        <ListItemText
+                            primary="2. Open the Zotero application on your Computer."
+                        />
+                    </ListItem>
+                    <ListItem disableGutters>
+                        <ListItemText
+                            primary="3. In Word, navigate to Zotero tab, then click on 'Add/Edit Citation'."
+                        />
+                    </ListItem>
+                    <img
+                        src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_zotero_plugin.png"
+                        alt="Find Zotero in Word"
+                        height={160}
+                        style={{
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            borderRadius: '4px',
+                        }}
+                    />
+                    <ListItem disableGutters>
+                        <ListItemText
+                            primary="4. Select one of the papers in your Endoc Word Add-In Collection to cite it in your Word Document."
+                        />
+                    </ListItem>
+                    <img
+                        src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_zotero_collection.png"
+                        alt="Cite Paper from Zotero Collection"
+                        height={160}
+                        style={{
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            borderRadius: '4px',
+                        }}
+                    />
                 </List>
             </DialogContent>
         </Dialog>

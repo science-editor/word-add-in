@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { nanoid } from "nanoid";
-import { DOCUMENT_SEARCH, PAGINATED_SEARCH, ADD_PAPER_TO_ZOTERO } from '../schemas.js';
+import { DOCUMENT_SEARCH, PAGINATED_SEARCH, SINGLE_PAPER_QUERY, ADD_PAPER_TO_ZOTERO } from "../schemas.js";
 import { toast } from 'react-toastify';
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -16,6 +16,7 @@ import DialogActions from '@mui/material/DialogActions';
 import CloseIcon from '@mui/icons-material/Close';
 import GoogleScholarChip from "./GoogleScholarChip";
 import DOIChip from "./DOIChip";
+import KeywordFilter from "./KeywordFilter";
 
 interface Paper {
     title: string;
@@ -33,13 +34,17 @@ interface Paper {
 const DocumentSearch = ({apiKey}) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
-    const [keywords, setKeywords] = useState('');
     const [loadingBar, setloadingBar] = useState(false);
     const [expandedPaper, setExpandedPaper] = useState<Paper | null>(null);
-
+    const [keywords, setKeywords] = useState<string[]>([]);
     const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
+    const [getPaperContent, { loading: loadingContent, error: errorContent, data: dataContent }] = useLazyQuery(SINGLE_PAPER_QUERY);
     const [addPaperToZotero, { loading, error, data }] = useMutation(ADD_PAPER_TO_ZOTERO)
+
+    const handleKeywordsChange = (newKeywords: string[]) => {
+        setKeywords(newKeywords);
+    };
 
     const handleClickSearchBtn = async () => {
         if (!localStorage.getItem("x_api_key")){
@@ -82,7 +87,7 @@ const DocumentSearch = ({apiKey}) => {
                     title: paper.Title,
                     authors: paper.Author,
                     year: paper.PublicationDate.Year,
-                    abstract: paper.Content.Abstract,
+                    abstract: null, //SINGLE_PAPER_QUERY
                     fullPaper: null, //SINGLE_PAPER_QUERY
                     collection: "S2AG",
                     DOI: paper.DOI,
@@ -136,9 +141,38 @@ const DocumentSearch = ({apiKey}) => {
         }
     }
 
-    const handleClickReadPaper = (paper) => {
-        setExpandedPaper(paper)
-    }
+    const handleClickReadPaper = async (paper) => {
+        try {
+            const contentResult = await getPaperContent({
+                variables: {
+                    paper_id: {
+                        collection: paper.collection,
+                        id_field: paper.idField,
+                        id_type: paper.idType,
+                        id_value: paper.idValue,
+                    }
+                }
+            });
+
+            const paperContent = contentResult.data.singlePaper.response.Content
+
+            const abstract = paperContent.Abstract;
+            const fullPaper = paperContent.Fullbody;
+
+            const paperWithContent = {
+                ...paper,
+                abstract,
+                fullPaper
+            };
+
+            setExpandedPaper(paperWithContent);
+        } catch (error) {
+            console.error('Error loading paper content:', error);
+            toast.error('Failed to load paper content. Please try again later or check console for details.', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+        }
+    };
 
 
     useEffect(() => {
@@ -239,16 +273,10 @@ const DocumentSearch = ({apiKey}) => {
                     />
                 </fieldset>
 
-                <fieldset className="search-fieldset">
-                    <legend className="search-legend">Content based filter</legend>
-                    <input
-                        className="input"
-                        type="text"
-                        placeholder="Enter keywords..."
-                        value={keywords}
-                        onChange={(e) => setKeywords(e.target.value)}
-                    />
-                </fieldset>
+                <KeywordFilter
+                    selectedKeywords={keywords}
+                    onKeywordsChange={handleKeywordsChange}
+                />
 
                 {!apiKey.trim() ? (
                     <Tooltip
