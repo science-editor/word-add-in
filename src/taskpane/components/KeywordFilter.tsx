@@ -24,9 +24,9 @@ interface KeywordSuggestionsVars {
 }
 
 export default function KeywordFilter({
-                                             selectedKeywords,
-                                             onKeywordsChange,
-                                         }: ChipAutocompleteProps) {
+                                          selectedKeywords,
+                                          onKeywordsChange,
+                                      }: ChipAutocompleteProps) {
     // suggestions & inputValue remain internal
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [inputValue, setInputValue] = useState<string>("");
@@ -64,6 +64,17 @@ export default function KeywordFilter({
         onKeywordsChange(newValue);
     };
 
+    const handleEnter = (event) => {
+        if (event.key === "Enter" && inputValue.trim() !== "") {
+            const newKeywords = Array.from(
+                new Set([...selectedKeywords, inputValue.trim()])
+            );
+            onKeywordsChange(newKeywords);
+            setInputValue('');
+            setSuggestions([]);
+        }
+    }
+
     // Only open if suggestions exist
     const isOpen = Boolean(inputValue && suggestions.length > 0);
 
@@ -100,6 +111,7 @@ export default function KeywordFilter({
                     placeholder={selectedKeywords.length > 0 ? "" : "Constrain your search with keywords"}
                     error={!!error}
                     helperText={error ? error.message : ""}
+                    onKeyDown={handleEnter}
                 />
             )}
         />
