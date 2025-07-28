@@ -1,42 +1,44 @@
 import React, { useState } from "react";
 import { FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select } from "@mui/material";
 import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import Chip from "@mui/material/Chip";
 
 const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
     const [selectedFilter, setSelectedFilter] = useState('');
     const [radioValue, setRadioValue] = useState('true');
-    const [inputValues, setInputValues] = useState('');
+    const [inputValues, setInputValues] = useState<string[]>([]);
 
     const selectFilter = (event) => {
         const value = event.target.value;
         setSelectedFilter(value);
         setRadioValue('true');
-        setInputValues('');
+        setInputValues([]);
 
         handleAdvancedFilterValueChange(value);
     };
 
     const handleRadioChange = (event) => {
-        const value = event.target.value;
-        setRadioValue(value);
+        const newRadioValue = event.target.value;
+        setRadioValue(newRadioValue);
 
-        // Determine prefix based on radio selection
-        const prefix = value === 'true' ? '' : '!';
-        const appendix = inputValues ? ':' + inputValues : '';
+        // Determine prefix based on radio selection and appendix if input values are provided
+        const prefix = newRadioValue === 'true' ? '' : '!';
+        const appendix = inputValues.length > 0 ? ':' + inputValues.join('|') : '';
 
         handleAdvancedFilterValueChange(prefix + selectedFilter + appendix);
     };
 
-    const handleInputChange = (event) => {
-        const newInputValues = event.target.value;
-        setInputValues(newInputValues);
 
-        // Determine prefix based on radio selection
+    const handleTagsChange = ( _event: React.SyntheticEvent, newTags: string[] ) => {
+        setInputValues(newTags);
+
+        // Determine prefix based on radio selection and appendix if input values are provided
         const prefix = radioValue === 'true' ? '' : '!';
-        const appendix = newInputValues ? ':' + newInputValues : '';
+        const appendix = newTags.length > 0 ? ':' + newTags.join('|') : '';
 
         handleAdvancedFilterValueChange(prefix + selectedFilter + appendix);
-    }
+    };
 
     return (
         <>
@@ -82,7 +84,7 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                 && (
                     <>
                         <FormControl>
-                            <InputLabel id="condition-label">Advanced Filter</InputLabel>
+                            <InputLabel id="condition-label">Condition</InputLabel>
                             <Select
                                 labelId="condition-label"
                                 id="condition"
@@ -94,12 +96,30 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                                 <MenuItem value="false">IS NOT</MenuItem>
                             </Select>
                         </FormControl>
-                        <TextField
-                            id="inputValues"
-                            label="Values"
-                            variant="outlined"
+                        <Autocomplete
+                            multiple
+                            freeSolo
+                            options={[]}
                             value={inputValues}
-                            onChange={handleInputChange}
+                            onChange={handleTagsChange}
+                            clearIcon={false}
+                            renderTags={(value, getTagProps) =>
+                                value.map((option, index) => (
+                                    <Chip
+                                        key={option}
+                                        label={option}
+                                        variant="outlined"
+                                        {...getTagProps({ index })}
+                                    />
+                                ))
+                            }
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Add Tags"
+                                    placeholder="Type and press Enter"
+                                />
+                            )}
                         />
                     </>
                 )
