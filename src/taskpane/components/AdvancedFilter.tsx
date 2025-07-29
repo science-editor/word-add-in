@@ -3,11 +3,13 @@ import { FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Radio, 
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
+import Box from "@mui/material/Box";
 
 const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
+
+    /* +++++++++++++++++++++++++++++++++++++++++++++++ Filter Selection ++++++++++++++++++++++++++++++++++++++++++++++ */
+
     const [selectedFilter, setSelectedFilter] = useState('');
-    const [radioValue, setRadioValue] = useState('true');
-    const [inputValues, setInputValues] = useState<string[]>([]);
 
     const selectFilter = (event) => {
         const newSelectedFilter = event.target.value;
@@ -23,6 +25,10 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
 
         handleAdvancedFilterValueChange(newSelectedFilter);
     };
+
+    /* +++++++++++++++++++++++++++++++++++++++++++++++ Radio/Booleans +++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    const [radioValue, setRadioValue] = useState('true');
 
     const handleRadioChange = (event) => {
         const newRadioValue = event.target.value;
@@ -41,6 +47,10 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
     };
 
 
+    /* +++++++++++++++++++++++++++++++++++++++++++++++++++ Chips +++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    const [inputValues, setInputValues] = useState<string[]>([]);
+
     const handleChipsChange = ( _event: React.SyntheticEvent, newInputValues: string[] ) => {
         setInputValues(newInputValues);
 
@@ -53,7 +63,7 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
 
 
 
-
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++ Range Slider ++++++++++++++++++++++++++++++++++++++++++++++++ */
 
     const currentYear = new Date().getFullYear();
     const [rangeSliderValues, setRangeSliderValues] = useState([2000, currentYear]);
@@ -73,8 +83,8 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
     };
 
     return (
-        <>
-            <FormControl fullWidth>
+        <div style={{ display: 'flex'}}>
+            <FormControl fullWidth sx={{ width: '25%', mr: 1 }}  >
                 <InputLabel id="advanced-filter-label">Advanced Filter</InputLabel>
                 <Select
                     labelId="advanced-filter-label"
@@ -98,12 +108,13 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                     selectedFilter === "AvailableField:Content.Fullbody_Parsed"
                 )
                 && (
-                    <FormControl component="fieldset" sx={{ mt: 2 }}>
+                    <FormControl component="fieldset" fullWidth sx={{ width: '100%' }}>
                         <RadioGroup
                             aria-label="include-filter"
                             name="include-filter"
                             value={radioValue}
                             onChange={handleRadioChange}
+                            row
                         >
                             <FormControlLabel value="true" control={<Radio />} label="True" />
                             <FormControlLabel value="false" control={<Radio />} label="False" />
@@ -115,8 +126,8 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
             {
                 selectedFilter === "PublicationDate.Year"
                 && (
-                    <>
-                        <FormControl>
+                    <Box sx={{ width: '100%', display: 'flex', gap: 1 }}>
+                        <FormControl fullWidth sx={{ width: '105px' }}>
                             <InputLabel id="condition-label">Condition</InputLabel>
                             <Select
                                 labelId="condition-label"
@@ -136,6 +147,8 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                             value={inputValues}
                             onChange={handleChipsChange}
                             clearIcon={false}
+                            fullWidth
+                            sx={{ width: '100%' }}
                             renderTags={(value, getTagProps) =>
                                 value.map((option, index) => (
                                     <Chip
@@ -154,15 +167,15 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                                 />
                             )}
                         />
-                    </>
+                    </Box>
                 )
             }
 
             {
                 selectedFilter === "PublicationDate.Year_RANGE"
                 && (
-                    <>
-                        <FormControl>
+                    <Box sx={{ width: '100%', display: 'flex', gap: 1 }}>
+                        <FormControl fullWidth sx={{ width: '105px' }}>
                             <InputLabel id="condition-label">Condition</InputLabel>
                             <Select
                                 labelId="condition-label"
@@ -175,18 +188,20 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                                 <MenuItem value="false">IS NOT</MenuItem>
                             </Select>
                         </FormControl>
-                        <Slider
-                            value={rangeSliderValues}
-                            onChange={handleRangeSliderChange}
-                            valueLabelDisplay="auto"
-                            min={1940}
-                            max={currentYear}
-                            step={1}
-                        />
-                    </>
+                        <Box sx={{ width: '100%'}}>
+                            <Slider
+                                value={rangeSliderValues}
+                                onChange={handleRangeSliderChange}
+                                valueLabelDisplay="auto"
+                                min={1940}
+                                max={currentYear}
+                                step={1}
+                            />
+                        </Box>
+                    </Box>
                 )
             }
-        </>
+        </div>
     );
 };
 
