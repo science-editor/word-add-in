@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select } from "@mui/material";
+import { FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, Slider } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
@@ -10,34 +10,66 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
     const [inputValues, setInputValues] = useState<string[]>([]);
 
     const selectFilter = (event) => {
-        const value = event.target.value;
-        setSelectedFilter(value);
+        const newSelectedFilter = event.target.value;
+        setSelectedFilter(newSelectedFilter);
         setRadioValue('true');
         setInputValues([]);
 
-        handleAdvancedFilterValueChange(value);
+        // Special case: When user selects Publication Year Range filter and doesn't manually change the year range, we have to explicitly update the filter like so
+        if (newSelectedFilter === 'PublicationDate.Year_RANGE'){
+            handleRangeSliderChange(event, rangeSliderValues)
+            return
+        }
+
+        handleAdvancedFilterValueChange(newSelectedFilter);
     };
 
     const handleRadioChange = (event) => {
         const newRadioValue = event.target.value;
         setRadioValue(newRadioValue);
 
-        // Determine prefix based on radio selection and appendix if input values are provided
+        // Determine prefix based on radio/boolean selection and appendix if input values are provided
         const prefix = newRadioValue === 'true' ? '' : '!';
-        const appendix = inputValues.length > 0 ? ':' + inputValues.join('|') : '';
+        let appendix = inputValues.length > 0 ? ':' + inputValues.join('|') : '';
+
+        // Special case: the range slider values are never null. So we explicitly check if this filter is the currently selected one, and then add those values to the appendix
+        if (selectedFilter === 'PublicationDate.Year_RANGE'){
+            appendix = rangeSliderValues.length > 0 ? ':' + rangeSliderValues.join('..') : '';
+        }
 
         handleAdvancedFilterValueChange(prefix + selectedFilter + appendix);
     };
 
 
-    const handleTagsChange = ( _event: React.SyntheticEvent, newTags: string[] ) => {
-        setInputValues(newTags);
+    const handleChipsChange = ( _event: React.SyntheticEvent, newInputValues: string[] ) => {
+        setInputValues(newInputValues);
 
-        // Determine prefix based on radio selection and appendix if input values are provided
+        // Determine prefix based on radio/boolean selection and appendix if input values are provided
         const prefix = radioValue === 'true' ? '' : '!';
-        const appendix = newTags.length > 0 ? ':' + newTags.join('|') : '';
+        const appendix = newInputValues.length > 0 ? ':' + newInputValues.join('|') : '';
 
         handleAdvancedFilterValueChange(prefix + selectedFilter + appendix);
+    };
+
+
+
+
+
+    const currentYear = new Date().getFullYear();
+    const [rangeSliderValues, setRangeSliderValues] = useState([2000, currentYear]);
+
+    const handleRangeSliderChange = (_event, newRangeSliderValues) => {
+        setRangeSliderValues(newRangeSliderValues);
+
+        // Determine prefix based on radio/boolean selection and appendix if input values are provided
+        const prefix = radioValue === 'true' ? '' : '!';
+        const appendix = newRangeSliderValues.length > 0 ? ':' + newRangeSliderValues.join('..') : '';
+
+        // Both filters "Publication Year" and "Publication Year Range" are called "PublicationDate.Year" in the NLP backend.
+        // To differentiate between them, I called the ladder "PublicationDate.Year_RANGE" in this frontend, which I now correct below for the backend
+        const correctFilterName = "PublicationDate.Year"
+
+        handleAdvancedFilterValueChange(prefix + correctFilterName + appendix);
     };
 
     return (
@@ -53,6 +85,7 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                 >
                     <MenuItem value="">No Filter</MenuItem>
                     <MenuItem value="PublicationDate.Year">Publication Year</MenuItem>
+                    <MenuItem value="PublicationDate.Year_RANGE">Publication Year Range</MenuItem>
                     <MenuItem value="AvailableField:Content.Abstract_Parsed">Abstract Parsed</MenuItem>
                     <MenuItem value="AvailableField:Content.Fullbody_Parsed">Fullbody Parsed</MenuItem>
                 </Select>
@@ -101,7 +134,7 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                             freeSolo
                             options={[]}
                             value={inputValues}
-                            onChange={handleTagsChange}
+                            onChange={handleChipsChange}
                             clearIcon={false}
                             renderTags={(value, getTagProps) =>
                                 value.map((option, index) => (
@@ -116,10 +149,39 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Add Tags"
+                                    label="Values"
                                     placeholder="Type and press Enter"
                                 />
                             )}
+                        />
+                    </>
+                )
+            }
+
+            {
+                selectedFilter === "PublicationDate.Year_RANGE"
+                && (
+                    <>
+                        <FormControl>
+                            <InputLabel id="condition-label">Condition</InputLabel>
+                            <Select
+                                labelId="condition-label"
+                                id="condition"
+                                value={radioValue}
+                                label="Condition"
+                                onChange={handleRadioChange}
+                            >
+                                <MenuItem value="true">IS</MenuItem>
+                                <MenuItem value="false">IS NOT</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <Slider
+                            value={rangeSliderValues}
+                            onChange={handleRangeSliderChange}
+                            valueLabelDisplay="auto"
+                            min={1940}
+                            max={currentYear}
+                            step={1}
                         />
                     </>
                 )
