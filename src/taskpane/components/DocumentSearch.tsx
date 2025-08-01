@@ -18,6 +18,7 @@ import GoogleScholarChip from "./GoogleScholarChip";
 import DOIChip from "./DOIChip";
 import KeywordFilter from "./KeywordFilter";
 import AdvancedFilter from "./AdvancedFilter";
+import AdvancedFilter2 from "./AdvancedFilter2";
 
 interface Paper {
     title: string;
@@ -38,7 +39,17 @@ const DocumentSearch = ({apiKey}) => {
     const [loadingBar, setloadingBar] = useState(false);
     const [expandedPaper, setExpandedPaper] = useState<Paper | null>(null);
     const [keywords, setKeywords] = useState<string[]>([]);
-    const [advancedFilterValue, setAdvancedFilterValue] = useState<string>(null);
+    //const [advancedFilterValue, setAdvancedFilterValue] = useState<string[]>([]);
+    const [advancedFilters, setAdvancedFilters] = useState(
+        [
+            {
+                id: nanoid(),
+                filterType: '',
+                values: [],
+                condition: true,
+            }
+        ]
+    );
     const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
     const [getPaperContent, { loading: loadingContent, error: errorContent, data: dataContent }] = useLazyQuery(SINGLE_PAPER_QUERY);
@@ -48,8 +59,36 @@ const DocumentSearch = ({apiKey}) => {
         setKeywords(newKeywords);
     };
 
+    /*
     const handleAdvancedFilterValueChange = (newValue: string) => {
-        setAdvancedFilterValue(newValue)
+        setAdvancedFilterValue(prevState => [...prevState, newValue])
+    }
+     */
+
+    const addFilter = () => {
+        setAdvancedFilters(prev => [
+            ...prev,
+            {
+                id: nanoid(),
+                filterType: '',
+                values: [],
+                condition: true,
+            }
+        ]);
+    }
+
+    const closeFilter = (idToRemove) => {
+        setAdvancedFilters(prev =>
+            prev.filter(filter => filter.id !== idToRemove)
+        );
+    };
+
+    const updateAdvancedFilter = (selectedID, propertyKey, newValue) => {
+        setAdvancedFilters( prev =>
+            prev.map(obj =>
+                obj.id === selectedID ? { ...obj, [propertyKey]: newValue } : obj
+            )
+        )
     }
 
     const handleClickSearchBtn = async () => {
@@ -71,10 +110,15 @@ const DocumentSearch = ({apiKey}) => {
         setloadingBar(true);
 
         // Combine keywords and advancedFilterValue into new array
+        /*
         const combinedKeywordsAndFilterValue = advancedFilterValue ? [...keywords, advancedFilterValue] : keywords;
         console.log('--- --- ---')
         console.log(combinedKeywordsAndFilterValue)
         console.log('--- --- ---')
+         */
+
+        const combinedKeywordsAndFilterValue = "dummy value"
+
 
         try {
             const result = await getDocuments({
@@ -279,7 +323,7 @@ const DocumentSearch = ({apiKey}) => {
                     <input
                         className="input"
                         type="text"
-                        placeholder="Search by title..."
+                        placeholder="Semantic discovery"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -289,9 +333,24 @@ const DocumentSearch = ({apiKey}) => {
                     selectedKeywords={keywords}
                     onKeywordsChange={handleKeywordsChange}
                 />
-                <AdvancedFilter
-                    handleAdvancedFilterValueChange={handleAdvancedFilterValueChange}
-                />
+
+                {
+                    advancedFilters.map( obj => {
+                        return (
+                            <AdvancedFilter2
+                                key={obj.id}
+                                id={obj.id}
+                                filterType={obj.filterType}
+                                values={obj.values}
+                                condition={obj.condition}
+                                closeFilter={closeFilter}
+                                updateAdvancedFilter={updateAdvancedFilter}
+                            />
+                        )
+                    })
+                }
+                <button onClick={addFilter}>Add</button>
+                {JSON.stringify(advancedFilters[0])}
 
                 {!apiKey.trim() ? (
                     <Tooltip
