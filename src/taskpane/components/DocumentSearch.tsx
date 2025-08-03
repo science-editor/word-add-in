@@ -46,7 +46,7 @@ const DocumentSearch = ({apiKey}) => {
                 id: nanoid(),
                 filterType: '',
                 values: [],
-                condition: true,
+                condition: 'true',
             }
         ]
     );
@@ -72,7 +72,7 @@ const DocumentSearch = ({apiKey}) => {
                 id: nanoid(),
                 filterType: '',
                 values: [],
-                condition: true,
+                condition: 'true',
             }
         ]);
     }
@@ -89,6 +89,41 @@ const DocumentSearch = ({apiKey}) => {
                 obj.id === selectedID ? { ...obj, [propertyKey]: newValue } : obj
             )
         )
+    }
+
+    const convertAdvancedFiltersToStrings = () => {
+        const filterObjsAsStrings = []
+
+        for (const filterObj of advancedFilters){
+
+            const conditionStr = filterObj.condition === 'true' ? '' : '!'
+            let filterTypeStr = ''
+            let valuesStr = ''
+
+            switch (filterObj.filterType){
+                case '':
+                    continue
+                case 'publication_year':
+                    filterTypeStr = 'PublicationDate.Year'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('|') : '';
+                    break
+                case 'publication_year_range':
+                    filterTypeStr = 'PublicationDate.Year'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('..') : '';
+                    break
+
+                case 'abstract_parsed':
+                    filterTypeStr = 'AvailableField:Content.Abstract_Parsed'
+                    break
+                case 'fullbody_parsed':
+                    filterTypeStr = 'AvailableField:Content.Fullbody_Parsed'
+            }
+
+            const combinedFilterStr = conditionStr + filterTypeStr + '' + valuesStr
+            filterObjsAsStrings.push(combinedFilterStr)
+        }
+
+        return filterObjsAsStrings;
     }
 
     const handleClickSearchBtn = async () => {
@@ -109,22 +144,18 @@ const DocumentSearch = ({apiKey}) => {
         setFoundPapers(null)
         setloadingBar(true);
 
-        // Combine keywords and advancedFilterValue into new array
-        /*
-        const combinedKeywordsAndFilterValue = advancedFilterValue ? [...keywords, advancedFilterValue] : keywords;
+        // Prepare keywords and advanced filters for the backend
+        const filterObjsAsStrings = convertAdvancedFiltersToStrings()
+        const combinedKeywordsAndFilters = filterObjsAsStrings.length > 0 ? [...keywords, ...filterObjsAsStrings] : keywords;
         console.log('--- --- ---')
-        console.log(combinedKeywordsAndFilterValue)
+        console.log(combinedKeywordsAndFilters)
         console.log('--- --- ---')
-         */
-
-        const combinedKeywordsAndFilterValue = "dummy value"
-
 
         try {
             const result = await getDocuments({
                 variables: {
                     ranking_variable: searchTerm,
-                    keywords: combinedKeywordsAndFilterValue
+                    keywords: combinedKeywordsAndFilters
                 }
             });
 
@@ -132,7 +163,7 @@ const DocumentSearch = ({apiKey}) => {
                 const metaResult = await getPaperMeta({
                     variables: {
                         paper_list: result.data.documentSearch.response.paper_list,
-                        keywords: combinedKeywordsAndFilterValue
+                        keywords: combinedKeywordsAndFilters
                     }
                 });
 
@@ -376,7 +407,7 @@ const DocumentSearch = ({apiKey}) => {
                     <button
                         className="search-btn"
                         onClick={handleClickSearchBtn}
-                        disabled={!apiKey.trim()}
+                        disabled={!apiKey.trim() || loadingBar}
                     >
                         Search
                     </button>

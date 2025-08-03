@@ -16,17 +16,13 @@ const AdvancedFilter2 = ({id, filterType, values, condition, closeFilter, update
         updateAdvancedFilter(id, "values", []);
     }
 
-    const handleRadioChange = (event) => {
+    const handleConditionChange = (event) => {
         const newConditionValue = event.target.value;
         updateAdvancedFilter(id, "condition", newConditionValue);
     }
 
     const handleValuesChange = (_event, newInputValues) => {
         updateAdvancedFilter(id, "values", newInputValues);
-    }
-
-    const handleRangeSliderChange = (_event, newRangeSliderValues) => {
-        updateAdvancedFilter(id, "values", newRangeSliderValues);
     }
 
     // When user selects the publication year range slider, pass the default values to parent component, in case user doesn't adjust the slider
@@ -67,7 +63,7 @@ const AdvancedFilter2 = ({id, filterType, values, condition, closeFilter, update
                             aria-label="include-filter"
                             name="include-filter"
                             value={condition}
-                            onChange={handleRadioChange}
+                            onChange={handleConditionChange}
                             row
                         >
                             <FormControlLabel value="true" control={<Radio />} label="True" />
@@ -91,7 +87,7 @@ const AdvancedFilter2 = ({id, filterType, values, condition, closeFilter, update
                             id="condition"
                             value={condition}
                             label="Condition"
-                            onChange={handleRadioChange}
+                            onChange={handleConditionChange}
                         >
                             <MenuItem value="true">IS</MenuItem>
                             <MenuItem value="false">IS NOT</MenuItem>
@@ -143,7 +139,7 @@ const AdvancedFilter2 = ({id, filterType, values, condition, closeFilter, update
                     <Box sx={{ width: '100%'}}>
                         <Slider
                             value={sliderValues}
-                            onChange={handleRangeSliderChange}
+                            onChange={handleValuesChange}
                             valueLabelDisplay="auto"
                             min={MIN}
                             max={MAX}
