@@ -1,119 +1,71 @@
-import React, { useState } from "react";
-import { FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, Slider } from "@mui/material";
+import React, { useEffect } from "react";
+import { FormControl, FormControlLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, Slider } from "@mui/material";
+import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
-const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
+const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateAdvancedFilter}) => {
+    const MIN = 1940;
+    const MAX = new Date().getFullYear();
+    const sliderValues = values.length === 2 ? values : [MIN, MAX];
 
-    /* +++++++++++++++++++++++++++++++++++++++++++++++ Filter Selection ++++++++++++++++++++++++++++++++++++++++++++++ */
+    const handleFilterChange = (event) => {
+        const newSelectedFilterType = event.target.value;
+        updateAdvancedFilter(id, "filterType", newSelectedFilterType);
+        updateAdvancedFilter(id, "values", []);
+    }
 
-    const [selectedFilter, setSelectedFilter] = useState('');
+    const handleConditionChange = (event) => {
+        const newConditionValue = event.target.value;
+        updateAdvancedFilter(id, "condition", newConditionValue);
+    }
 
-    const selectFilter = (event) => {
-        const newSelectedFilter = event.target.value;
-        setSelectedFilter(newSelectedFilter);
-        setRadioValue('true');
-        setInputValues([]);
+    const handleValuesChange = (_event, newInputValues) => {
+        updateAdvancedFilter(id, "values", newInputValues);
+    }
 
-        // Special case: When user selects Publication Year Range filter and doesn't manually change the year range, we have to explicitly update the filter like so
-        if (newSelectedFilter === 'PublicationDate.Year_RANGE'){
-            handleRangeSliderChange(event, rangeSliderValues)
-            return
+    // When user selects the publication year range slider, pass the default values to parent component, in case user doesn't adjust the slider
+    useEffect( () => {
+        if (filterType === 'publication_year_range'){
+            updateAdvancedFilter(id, "values", [MIN, MAX]);
         }
-
-        handleAdvancedFilterValueChange(newSelectedFilter);
-    };
-
-    /* +++++++++++++++++++++++++++++++++++++++++++++++ Radio/Booleans +++++++++++++++++++++++++++++++++++++++++++++++ */
-
-    const [radioValue, setRadioValue] = useState('true');
-
-    const handleRadioChange = (event) => {
-        const newRadioValue = event.target.value;
-        setRadioValue(newRadioValue);
-
-        // Determine prefix based on radio/boolean selection and appendix if input values are provided
-        const prefix = newRadioValue === 'true' ? '' : '!';
-        let appendix = inputValues.length > 0 ? ':' + inputValues.join('|') : '';
-
-        // Special case: the range slider values are never null. So we explicitly check if this filter is the currently selected one, and then add those values to the appendix
-        if (selectedFilter === 'PublicationDate.Year_RANGE'){
-            appendix = rangeSliderValues.length > 0 ? ':' + rangeSliderValues.join('..') : '';
-        }
-
-        handleAdvancedFilterValueChange(prefix + selectedFilter + appendix);
-    };
-
-
-    /* +++++++++++++++++++++++++++++++++++++++++++++++++++ Chips +++++++++++++++++++++++++++++++++++++++++++++++++++ */
-
-    const [inputValues, setInputValues] = useState<string[]>([]);
-
-    const handleChipsChange = ( _event: React.SyntheticEvent, newInputValues: string[] ) => {
-        setInputValues(newInputValues);
-
-        // Determine prefix based on radio/boolean selection and appendix if input values are provided
-        const prefix = radioValue === 'true' ? '' : '!';
-        const appendix = newInputValues.length > 0 ? ':' + newInputValues.join('|') : '';
-
-        handleAdvancedFilterValueChange(prefix + selectedFilter + appendix);
-    };
-
-
-
-    /* ++++++++++++++++++++++++++++++++++++++++++++++++ Range Slider ++++++++++++++++++++++++++++++++++++++++++++++++ */
-
-    const currentYear = new Date().getFullYear();
-    const [rangeSliderValues, setRangeSliderValues] = useState([2000, currentYear]);
-
-    const handleRangeSliderChange = (_event, newRangeSliderValues) => {
-        setRangeSliderValues(newRangeSliderValues);
-
-        // Determine prefix based on radio/boolean selection and appendix if input values are provided
-        const prefix = radioValue === 'true' ? '' : '!';
-        const appendix = newRangeSliderValues.length > 0 ? ':' + newRangeSliderValues.join('..') : '';
-
-        // Both filters "Publication Year" and "Publication Year Range" are called "PublicationDate.Year" in the NLP backend.
-        // To differentiate between them, I called the ladder "PublicationDate.Year_RANGE" in this frontend, which I now correct below for the backend
-        const correctFilterName = "PublicationDate.Year"
-
-        handleAdvancedFilterValueChange(prefix + correctFilterName + appendix);
-    };
+    }, [filterType])
 
     return (
         <div style={{ display: 'flex'}}>
-            <FormControl fullWidth sx={{ width: '25%', mr: 1 }}  >
+            <FormControl fullWidth sx={{ width: '40%', mr: 1 }}  >
                 <InputLabel id="advanced-filter-label">Advanced Filter</InputLabel>
                 <Select
                     labelId="advanced-filter-label"
                     id="advanced-filter"
-                    value={selectedFilter}
+                    value={filterType}
                     label="Advanced Filter"
-                    onChange={selectFilter}
+                    onChange={handleFilterChange}
                 >
                     <MenuItem value="">No Filter</MenuItem>
-                    <MenuItem value="PublicationDate.Year">Publication Year</MenuItem>
-                    <MenuItem value="PublicationDate.Year_RANGE">Publication Year Range</MenuItem>
-                    <MenuItem value="AvailableField:Content.Abstract_Parsed">Abstract Parsed</MenuItem>
-                    <MenuItem value="AvailableField:Content.Fullbody_Parsed">Fullbody Parsed</MenuItem>
+                    <MenuItem value="publication_year">Publication Year</MenuItem>
+                    <MenuItem value="publication_year_range">Publication Year Range</MenuItem>
+                    <MenuItem value="abstract_parsed">Abstract Parsed</MenuItem>
+                    <MenuItem value="fullbody_parsed">Fullbody Parsed</MenuItem>
                 </Select>
             </FormControl>
 
             {
                 (
-                    selectedFilter === "AvailableField:Content.Abstract_Parsed"
+                    filterType === "abstract_parsed"
                     ||
-                    selectedFilter === "AvailableField:Content.Fullbody_Parsed"
+                    filterType === "fullbody_parsed"
                 )
                 && (
-                    <FormControl component="fieldset" fullWidth sx={{ width: '100%' }}>
+                    <FormControl component="fieldset" fullWidth sx={{ width: '100%'}}>
                         <RadioGroup
                             aria-label="include-filter"
                             name="include-filter"
-                            value={radioValue}
-                            onChange={handleRadioChange}
+                            value={condition}
+                            onChange={handleConditionChange}
                             row
                         >
                             <FormControlLabel value="true" control={<Radio />} label="True" />
@@ -124,85 +76,95 @@ const AdvancedFilter = ({ handleAdvancedFilterValueChange }) => {
             }
 
             {
-                selectedFilter === "PublicationDate.Year"
+                (
+                    filterType === "publication_year"
+                    ||
+                    filterType === "publication_year_range"
+                )
                 && (
-                    <Box sx={{ width: '100%', display: 'flex', gap: 1 }}>
-                        <FormControl fullWidth sx={{ width: '105px' }}>
-                            <InputLabel id="condition-label">Condition</InputLabel>
-                            <Select
-                                labelId="condition-label"
-                                id="condition"
-                                value={radioValue}
-                                label="Condition"
-                                onChange={handleRadioChange}
-                            >
-                                <MenuItem value="true">IS</MenuItem>
-                                <MenuItem value="false">IS NOT</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <Autocomplete
-                            multiple
-                            freeSolo
-                            options={[]}
-                            value={inputValues}
-                            onChange={handleChipsChange}
-                            clearIcon={false}
-                            fullWidth
-                            sx={{ width: '100%' }}
-                            renderTags={(value, getTagProps) =>
-                                value.map((option, index) => (
-                                    <Chip
-                                        key={option}
-                                        label={option}
-                                        variant="outlined"
-                                        {...getTagProps({ index })}
-                                    />
-                                ))
-                            }
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    label="Values"
-                                    placeholder="Type and press Enter"
+                    <FormControl fullWidth sx={{ width: '105px', mr: 1 }}>
+                        <InputLabel id="condition-label">Condition</InputLabel>
+                        <Select
+                            labelId="condition-label"
+                            id="condition"
+                            value={condition}
+                            label="Condition"
+                            onChange={handleConditionChange}
+                        >
+                            <MenuItem value="true">IS</MenuItem>
+                            <MenuItem value="false">IS NOT</MenuItem>
+                        </Select>
+                    </FormControl>
+                )
+            }
+
+            {
+                (
+                    filterType === "publication_year"
+                    ||
+                    filterType === "NEXT FILTER TYPE HERE"
+                )
+                && (
+                    <Autocomplete
+                        multiple
+                        freeSolo
+                        options={[]}
+                        value={values}
+                        onChange={handleValuesChange}
+                        clearIcon={false}
+                        fullWidth
+                        sx={{ width: '100%' }}
+                        renderTags={(value, getTagProps) =>
+                            value.map((option, index) => (
+                                <Chip
+                                    key={option}
+                                    label={option}
+                                    variant="outlined"
+                                    {...getTagProps({ index })}
                                 />
-                            )}
+                            ))
+                        }
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Values"
+                                placeholder="Type and press Enter"
+                            />
+                        )}
+                    />
+                )
+            }
+
+            {
+                filterType === "publication_year_range"
+                && (
+                    <Box sx={{ width: '100%', mr: 1, ml: 1, alignContent: 'center'}}>
+                        <Slider
+                            value={sliderValues}
+                            onChange={handleValuesChange}
+                            valueLabelDisplay="auto"
+                            min={MIN}
+                            max={MAX}
+                            step={1}
                         />
                     </Box>
                 )
             }
 
-            {
-                selectedFilter === "PublicationDate.Year_RANGE"
-                && (
-                    <Box sx={{ width: '100%', display: 'flex', gap: 1 }}>
-                        <FormControl fullWidth sx={{ width: '105px' }}>
-                            <InputLabel id="condition-label">Condition</InputLabel>
-                            <Select
-                                labelId="condition-label"
-                                id="condition"
-                                value={radioValue}
-                                label="Condition"
-                                onChange={handleRadioChange}
-                            >
-                                <MenuItem value="true">IS</MenuItem>
-                                <MenuItem value="false">IS NOT</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <Box sx={{ width: '100%'}}>
-                            <Slider
-                                value={rangeSliderValues}
-                                onChange={handleRangeSliderChange}
-                                valueLabelDisplay="auto"
-                                min={1940}
-                                max={currentYear}
-                                step={1}
-                            />
-                        </Box>
-                    </Box>
-                )
-            }
+            <IconButton
+                aria-label="Close Filter"
+                size="small"
+                sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%"
+                }}
+                onClick={() => closeFilter(id)}
+            >
+                <CloseIcon fontSize="inherit" />
+            </IconButton>
         </div>
-    );
-};
+    )
+}
 
 export default AdvancedFilter;

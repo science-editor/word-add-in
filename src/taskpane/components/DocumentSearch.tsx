@@ -14,11 +14,11 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import CloseIcon from '@mui/icons-material/Close';
+import AddBoxIcon from '@mui/icons-material/AddBox';
 import GoogleScholarChip from "./GoogleScholarChip";
 import DOIChip from "./DOIChip";
 import KeywordFilter from "./KeywordFilter";
 import AdvancedFilter from "./AdvancedFilter";
-import AdvancedFilter2 from "./AdvancedFilter2";
 
 interface Paper {
     title: string;
@@ -368,7 +368,7 @@ const DocumentSearch = ({apiKey}) => {
                 {
                     advancedFilters.map( obj => {
                         return (
-                            <AdvancedFilter2
+                            <AdvancedFilter
                                 key={obj.id}
                                 id={obj.id}
                                 filterType={obj.filterType}
@@ -380,8 +380,21 @@ const DocumentSearch = ({apiKey}) => {
                         )
                     })
                 }
-                <button onClick={addFilter}>Add</button>
-                {JSON.stringify(advancedFilters[0])}
+                <Tooltip title="Add Filter">
+                    <IconButton
+                        aria-label="Add Filter"
+                        size="medium"
+                        onClick={addFilter}
+                        sx={{
+                            m: 0,
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                        }}
+                    >
+                        <AddBoxIcon fontSize="inherit" />
+                    </IconButton>
+                </Tooltip>
 
                 {!apiKey.trim() ? (
                     <Tooltip
