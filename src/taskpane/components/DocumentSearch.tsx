@@ -14,9 +14,11 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import CloseIcon from '@mui/icons-material/Close';
+import AddBoxIcon from '@mui/icons-material/AddBox';
 import GoogleScholarChip from "./GoogleScholarChip";
 import DOIChip from "./DOIChip";
 import KeywordFilter from "./KeywordFilter";
+import AdvancedFilter from "./AdvancedFilter";
 
 interface Paper {
     title: string;
@@ -37,6 +39,17 @@ const DocumentSearch = ({apiKey}) => {
     const [loadingBar, setloadingBar] = useState(false);
     const [expandedPaper, setExpandedPaper] = useState<Paper | null>(null);
     const [keywords, setKeywords] = useState<string[]>([]);
+    //const [advancedFilterValue, setAdvancedFilterValue] = useState<string[]>([]);
+    const [advancedFilters, setAdvancedFilters] = useState(
+        [
+            {
+                id: nanoid(),
+                filterType: '',
+                values: [],
+                condition: 'true',
+            }
+        ]
+    );
     const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
     const [getPaperContent, { loading: loadingContent, error: errorContent, data: dataContent }] = useLazyQuery(SINGLE_PAPER_QUERY);
@@ -45,6 +58,73 @@ const DocumentSearch = ({apiKey}) => {
     const handleKeywordsChange = (newKeywords: string[]) => {
         setKeywords(newKeywords);
     };
+
+    /*
+    const handleAdvancedFilterValueChange = (newValue: string) => {
+        setAdvancedFilterValue(prevState => [...prevState, newValue])
+    }
+     */
+
+    const addFilter = () => {
+        setAdvancedFilters(prev => [
+            ...prev,
+            {
+                id: nanoid(),
+                filterType: '',
+                values: [],
+                condition: 'true',
+            }
+        ]);
+    }
+
+    const closeFilter = (idToRemove) => {
+        setAdvancedFilters(prev =>
+            prev.filter(filter => filter.id !== idToRemove)
+        );
+    };
+
+    const updateAdvancedFilter = (selectedID, propertyKey, newValue) => {
+        setAdvancedFilters( prev =>
+            prev.map(obj =>
+                obj.id === selectedID ? { ...obj, [propertyKey]: newValue } : obj
+            )
+        )
+    }
+
+    const convertAdvancedFiltersToStrings = () => {
+        const filterObjsAsStrings = []
+
+        for (const filterObj of advancedFilters){
+
+            const conditionStr = filterObj.condition === 'true' ? '' : '!'
+            let filterTypeStr = ''
+            let valuesStr = ''
+
+            switch (filterObj.filterType){
+                case '':
+                    continue
+                case 'publication_year':
+                    filterTypeStr = 'PublicationDate.Year'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('|') : '';
+                    break
+                case 'publication_year_range':
+                    filterTypeStr = 'PublicationDate.Year'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('..') : '';
+                    break
+
+                case 'abstract_parsed':
+                    filterTypeStr = 'AvailableField:Content.Abstract_Parsed'
+                    break
+                case 'fullbody_parsed':
+                    filterTypeStr = 'AvailableField:Content.Fullbody_Parsed'
+            }
+
+            const combinedFilterStr = conditionStr + filterTypeStr + '' + valuesStr
+            filterObjsAsStrings.push(combinedFilterStr)
+        }
+
+        return filterObjsAsStrings;
+    }
 
     const handleClickSearchBtn = async () => {
         if (!localStorage.getItem("x_api_key")){
@@ -64,11 +144,18 @@ const DocumentSearch = ({apiKey}) => {
         setFoundPapers(null)
         setloadingBar(true);
 
+        // Prepare keywords and advanced filters for the backend
+        const filterObjsAsStrings = convertAdvancedFiltersToStrings()
+        const combinedKeywordsAndFilters = filterObjsAsStrings.length > 0 ? [...keywords, ...filterObjsAsStrings] : keywords;
+        console.log('--- --- ---')
+        console.log(combinedKeywordsAndFilters)
+        console.log('--- --- ---')
+
         try {
             const result = await getDocuments({
                 variables: {
                     ranking_variable: searchTerm,
-                    keywords: keywords
+                    keywords: combinedKeywordsAndFilters
                 }
             });
 
@@ -76,7 +163,7 @@ const DocumentSearch = ({apiKey}) => {
                 const metaResult = await getPaperMeta({
                     variables: {
                         paper_list: result.data.documentSearch.response.paper_list,
-                        keywords: keywords
+                        keywords: combinedKeywordsAndFilters
                     }
                 });
 
@@ -122,7 +209,7 @@ const DocumentSearch = ({apiKey}) => {
                     },
                 },
             })
-            console.log('Zotero responseEE:', result.data.addPaperToZotero)
+            console.log('Zotero response:', result.data.addPaperToZotero)
             if (result.data.addPaperToZotero.status === 'success'){
                 toast.success('Paper succesfully added to your Zotero Library.', {
                     icon: <span role="img" aria-label="warning">✅️</span>,
@@ -267,7 +354,7 @@ const DocumentSearch = ({apiKey}) => {
                     <input
                         className="input"
                         type="text"
-                        placeholder="Search by title..."
+                        placeholder="Semantic discovery"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -277,6 +364,37 @@ const DocumentSearch = ({apiKey}) => {
                     selectedKeywords={keywords}
                     onKeywordsChange={handleKeywordsChange}
                 />
+
+                {
+                    advancedFilters.map( obj => {
+                        return (
+                            <AdvancedFilter
+                                key={obj.id}
+                                id={obj.id}
+                                filterType={obj.filterType}
+                                values={obj.values}
+                                condition={obj.condition}
+                                closeFilter={closeFilter}
+                                updateAdvancedFilter={updateAdvancedFilter}
+                            />
+                        )
+                    })
+                }
+                <Tooltip title="Add Filter">
+                    <IconButton
+                        aria-label="Add Filter"
+                        size="medium"
+                        onClick={addFilter}
+                        sx={{
+                            m: 0,
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                        }}
+                    >
+                        <AddBoxIcon fontSize="inherit" />
+                    </IconButton>
+                </Tooltip>
 
                 {!apiKey.trim() ? (
                     <Tooltip
@@ -302,7 +420,7 @@ const DocumentSearch = ({apiKey}) => {
                     <button
                         className="search-btn"
                         onClick={handleClickSearchBtn}
-                        disabled={!apiKey.trim()}
+                        disabled={!apiKey.trim() || loadingBar}
                     >
                         Search
                     </button>
