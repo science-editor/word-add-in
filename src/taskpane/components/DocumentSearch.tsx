@@ -19,6 +19,7 @@ import GoogleScholarChip from "./GoogleScholarChip";
 import DOIChip from "./DOIChip";
 import KeywordFilter from "./KeywordFilter";
 import AdvancedFilter from "./AdvancedFilter";
+import QuickSearch from "./QuickSearch";
 
 interface Paper {
     title: string;
@@ -39,7 +40,6 @@ const DocumentSearch = ({apiKey}) => {
     const [loadingBar, setloadingBar] = useState(false);
     const [expandedPaper, setExpandedPaper] = useState<Paper | null>(null);
     const [keywords, setKeywords] = useState<string[]>([]);
-    //const [advancedFilterValue, setAdvancedFilterValue] = useState<string[]>([]);
     const [advancedFilters, setAdvancedFilters] = useState(
         [
             {
@@ -58,12 +58,6 @@ const DocumentSearch = ({apiKey}) => {
     const handleKeywordsChange = (newKeywords: string[]) => {
         setKeywords(newKeywords);
     };
-
-    /*
-    const handleAdvancedFilterValueChange = (newValue: string) => {
-        setAdvancedFilterValue(prevState => [...prevState, newValue])
-    }
-     */
 
     const addFilter = () => {
         setAdvancedFilters(prev => [
@@ -126,7 +120,7 @@ const DocumentSearch = ({apiKey}) => {
         return filterObjsAsStrings;
     }
 
-    const handleClickSearchBtn = async () => {
+    const handleClickSearchBtn = async (newSearchTerm) => {
         if (!localStorage.getItem("x_api_key")){
             toast.error('Please provide a valid API key first.', {
                 icon: <span role="img" aria-label="warning">⚠️</span>,
@@ -134,7 +128,7 @@ const DocumentSearch = ({apiKey}) => {
             return;
         }
 
-        if (!searchTerm){
+        if (!newSearchTerm){
             toast.error('Please provide at least one search term', {
                 icon: <span role="img" aria-label="warning">⚠️</span>,
             });
@@ -154,7 +148,7 @@ const DocumentSearch = ({apiKey}) => {
         try {
             const result = await getDocuments({
                 variables: {
-                    ranking_variable: searchTerm,
+                    ranking_variable: newSearchTerm,
                     keywords: combinedKeywordsAndFilters
                 }
             });
@@ -270,6 +264,7 @@ const DocumentSearch = ({apiKey}) => {
             if (newSearchTerm) {
                 setSearchTerm(newSearchTerm);
                 localStorage.removeItem("searchTerm");
+                handleClickSearchBtn(newSearchTerm)
             }
         };
 
@@ -348,6 +343,8 @@ const DocumentSearch = ({apiKey}) => {
                 </DialogContent>
             </Dialog>
 
+            <QuickSearch setSearchTerm={setSearchTerm} handleClickSearchBtn={handleClickSearchBtn} />
+
             <div className="search-container">
                 <fieldset className="search-fieldset">
                     <legend className="search-legend">Semantic Search</legend>
@@ -410,7 +407,7 @@ const DocumentSearch = ({apiKey}) => {
                     >
                         <button
                             className="search-btn"
-                            onClick={handleClickSearchBtn}
+                            onClick={() => handleClickSearchBtn(searchTerm)}
                             disabled={!apiKey.trim()}
                         >
                             Search
@@ -419,7 +416,7 @@ const DocumentSearch = ({apiKey}) => {
                 ) : (
                     <button
                         className="search-btn"
-                        onClick={handleClickSearchBtn}
+                        onClick={() => handleClickSearchBtn(searchTerm)}
                         disabled={!apiKey.trim() || loadingBar}
                     >
                         Search
