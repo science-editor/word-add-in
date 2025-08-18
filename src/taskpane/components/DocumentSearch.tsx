@@ -20,6 +20,7 @@ import DOIChip from "./DOIChip";
 import KeywordFilter from "./KeywordFilter";
 import AdvancedFilter from "./AdvancedFilter";
 import QuickSearch from "./QuickSearch";
+import TextField from "@mui/material/TextField";
 
 interface Paper {
     title: string;
@@ -105,7 +106,30 @@ const DocumentSearch = ({apiKey}) => {
                     filterTypeStr = 'PublicationDate.Year'
                     valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('..') : '';
                     break
-
+                case 'author_full_name':
+                    filterTypeStr = 'Author.FullName'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('|') : '';
+                    break
+                case 'author_given_name':
+                    filterTypeStr = 'Author.GivenName'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('|') : '';
+                    break
+                case 'author_family_name':
+                    filterTypeStr = 'Author.FamilyName'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('|') : '';
+                    break
+                case 'title':
+                    filterTypeStr = 'Title'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('|') : '';
+                    break
+                case 'venue':
+                    filterTypeStr = 'Venue'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('|') : '';
+                    break
+                case 'doi':
+                    filterTypeStr = 'DOI'
+                    valuesStr = filterObj.values.length > 0 ? ':' + filterObj.values.join('|') : '';
+                    break
                 case 'abstract_parsed':
                     filterTypeStr = 'AvailableField:Content.Abstract_Parsed'
                     break
@@ -346,16 +370,15 @@ const DocumentSearch = ({apiKey}) => {
             <QuickSearch setSearchTerm={setSearchTerm} handleClickSearchBtn={handleClickSearchBtn} />
 
             <div className="search-container">
-                <fieldset className="search-fieldset">
-                    <legend className="search-legend">Semantic Search</legend>
-                    <input
-                        className="input"
-                        type="text"
-                        placeholder="Semantic discovery"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </fieldset>
+                <TextField
+                    variant="outlined"
+                    label="Semantic Search"
+                    placeholder="Semantic discovery - Your text will be used to rank the filtered papers"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    size="small"
+                    fullWidth
+                />
 
                 <KeywordFilter
                     selectedKeywords={keywords}

@@ -108,6 +108,7 @@ export default function KeywordFilter({
                 <TextField
                     {...params}
                     variant="outlined"
+                    size="small"
                     label="Keyword Filter"
                     placeholder={selectedKeywords.length > 0 ? "" : "Constrain your search with keywords"}
                     error={!!error}

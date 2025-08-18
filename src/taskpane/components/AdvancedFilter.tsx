@@ -36,7 +36,11 @@ const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateA
 
     return (
         <div style={{ display: 'flex'}}>
-            <FormControl fullWidth sx={{ width: '40%', mr: 1 }}  >
+            <FormControl
+                fullWidth
+                size="small"
+                sx={{ width: '40%', mr: 1 }}
+            >
                 <InputLabel id="advanced-filter-label">Advanced Filter</InputLabel>
                 <Select
                     labelId="advanced-filter-label"
@@ -48,6 +52,12 @@ const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateA
                     <MenuItem value="">No Filter</MenuItem>
                     <MenuItem value="publication_year">Publication Year</MenuItem>
                     <MenuItem value="publication_year_range">Publication Year Range</MenuItem>
+                    <MenuItem value="author_full_name">Author Full Name</MenuItem>
+                    <MenuItem value="author_given_name">Author Given Name</MenuItem>
+                    <MenuItem value="author_family_name">Author Family Name</MenuItem>
+                    <MenuItem value="title">Title</MenuItem>
+                    <MenuItem value="venue">Venue</MenuItem>
+                    <MenuItem value="doi">DOI</MenuItem>
                     <MenuItem value="abstract_parsed">Abstract Parsed</MenuItem>
                     <MenuItem value="fullbody_parsed">Fullbody Parsed</MenuItem>
                 </Select>
@@ -60,7 +70,11 @@ const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateA
                     filterType === "fullbody_parsed"
                 )
                 && (
-                    <FormControl component="fieldset" fullWidth sx={{ width: '100%'}}>
+                    <FormControl
+                        component="fieldset"
+                        size="small"
+                        fullWidth sx={{ width: '100%'}}
+                    >
                         <RadioGroup
                             aria-label="include-filter"
                             name="include-filter"
@@ -80,9 +94,21 @@ const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateA
                     filterType === "publication_year"
                     ||
                     filterType === "publication_year_range"
+                    ||
+                    filterType === "author_full_name"
+                    ||
+                    filterType === "author_given_name"
+                    ||
+                    filterType === "author_family_name"
+                    ||
+                    filterType === "doi"
                 )
                 && (
-                    <FormControl fullWidth sx={{ width: '105px', mr: 1 }}>
+                    <FormControl
+                        fullWidth
+                        size="small"
+                        sx={{ width: '105px', mr: 1 }}
+                    >
                         <InputLabel id="condition-label">Condition</InputLabel>
                         <Select
                             labelId="condition-label"
@@ -100,9 +126,46 @@ const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateA
 
             {
                 (
+                    filterType === "title"
+                    ||
+                    filterType === "venue"
+                )
+                && (
+                    <FormControl
+                        fullWidth
+                        size="small"
+                        sx={{ width: '105px', mr: 1 }}
+                    >
+                        <InputLabel id="condition-label">Condition</InputLabel>
+                        <Select
+                            labelId="condition-label"
+                            id="condition"
+                            value={condition}
+                            label="Condition"
+                            onChange={handleConditionChange}
+                        >
+                            <MenuItem value="true">INCLUDES</MenuItem>
+                            <MenuItem value="false">EXCLUDES</MenuItem>
+                        </Select>
+                    </FormControl>
+                )
+            }
+
+            {
+                (
                     filterType === "publication_year"
                     ||
-                    filterType === "NEXT FILTER TYPE HERE"
+                    filterType === "author_full_name"
+                    ||
+                    filterType === "author_given_name"
+                    ||
+                    filterType === "author_family_name"
+                    ||
+                    filterType === "title"
+                    ||
+                    filterType === "venue"
+                    ||
+                    filterType === "doi"
                 )
                 && (
                     <Autocomplete
@@ -127,6 +190,7 @@ const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateA
                         renderInput={(params) => (
                             <TextField
                                 {...params}
+                                size="small"
                                 label="Values"
                                 placeholder="Type and press Enter"
                             />
