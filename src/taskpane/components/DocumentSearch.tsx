@@ -422,41 +422,77 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
                 />
 
 
-                <div style={{ display: "flex"}}>
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
-                        {
-                            advancedFilters.map( obj => {
-                                return (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    {advancedFilters.length === 0 ? (
+                        // If there are no filters being rendered, just render the "Add Filter" button
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Box sx={{ flex: 1 }} />
+                            <Tooltip title="Add Filter">
+                                <IconButton
+                                    aria-label="Add Filter"
+                                    size="medium"
+                                    onClick={addFilter}
+                                    sx={{
+                                        flexShrink: 0,
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: "50%",
+                                        p: 0,
+                                    }}
+                                >
+                                    <AddBoxIcon fontSize="inherit" />
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
+                    ) : (
+                        <>
+                            {/* All but the last filter will have full width */}
+                            {advancedFilters.slice(0, -1).map((obj) => (
+                                <AdvancedFilter
+                                    key={obj.id}
+                                    id={obj.id}
+                                    filterType={obj.filterType}
+                                    values={obj.values}
+                                    condition={obj.condition}
+                                    closeFilter={closeFilter}
+                                    updateAdvancedFilter={updateAdvancedFilter}
+                                />
+                            ))}
+
+                            {/* Last filter will be in a flex row with the "Add filter" button on its right */}
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                <Box sx={{ flex: 1 }}>
                                     <AdvancedFilter
-                                        key={obj.id}
-                                        id={obj.id}
-                                        filterType={obj.filterType}
-                                        values={obj.values}
-                                        condition={obj.condition}
+                                        key={advancedFilters[advancedFilters.length - 1].id}
+                                        id={advancedFilters[advancedFilters.length - 1].id}
+                                        filterType={advancedFilters[advancedFilters.length - 1].filterType}
+                                        values={advancedFilters[advancedFilters.length - 1].values}
+                                        condition={advancedFilters[advancedFilters.length - 1].condition}
                                         closeFilter={closeFilter}
                                         updateAdvancedFilter={updateAdvancedFilter}
                                     />
-                                )
-                            })
-                        }
-                    </div>
-                    <Tooltip title="Add Filter">
-                        <IconButton
-                            aria-label="Add Filter"
-                            size="medium"
-                            onClick={addFilter}
-                            sx={{
-                                m: 0,
-                                flexShrink: 0,
-                                width: 32,
-                                height: 32,
-                                borderRadius: '50%',
-                            }}
-                        >
-                            <AddBoxIcon fontSize="inherit" />
-                        </IconButton>
-                    </Tooltip>
-                </div>
+                                </Box>
+
+                                <Tooltip title="Add Filter">
+                                    <IconButton
+                                        aria-label="Add Filter"
+                                        size="medium"
+                                        onClick={addFilter}
+                                        sx={{
+                                            flexShrink: 0,
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: "50%",
+                                            p: 0,
+                                        }}
+                                    >
+                                        <AddBoxIcon fontSize="inherit" />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        </>
+                    )}
+                </Box>
 
                 {!apiKey.trim() ? (
                     <Tooltip
