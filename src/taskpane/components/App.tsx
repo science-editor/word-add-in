@@ -66,7 +66,7 @@ const App = () => {
     const [apiKey, setApiKey] = React.useState(storedKey);
     const [client, setClient] = React.useState(() => createClient(storedKey));
     const endocURL = "https://endoc.ethz.ch/";
-    const [showTutorial, setShowTutorial] = React.useState(false);
+
 
     const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -76,42 +76,14 @@ const App = () => {
         console.log("API key saved and client updated");
     };
 
-    const openTutorialWindow = () => {
-        setShowTutorial(true)
-    };
 
-    const closeTutorialWindow = () => {
-        setShowTutorial(false);
-    }
 
     return (
         <ApolloProvider client={client}>
             <div className="root">
-                <TutorialWindow
-                    showTutorial={showTutorial}
-                    closeTutorialWindow={closeTutorialWindow}
-                    apiKey={apiKey}
-                    handleApiKeyChange={handleApiKeyChange}
-                />
-
-                <div style={{ display: "flex", justifyContent: "flex-end"}}>
-                    <IconButton
-                        className={apiKey ? '' : 'attention-pulse'}
-                        aria-label="Endoc API Key help"
-                        size="medium"
-                        sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: "50%"
-                        }}
-                        onClick={openTutorialWindow}
-                    >
-                        <SettingsIcon fontSize="inherit" />
-                    </IconButton>
-                </div>
-
                 <DocumentSearch
                     apiKey={apiKey}
+                    handleApiKeyChange={handleApiKeyChange}
                 />
             </div>
         </ApolloProvider>

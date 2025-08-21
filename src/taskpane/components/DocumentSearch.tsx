@@ -21,6 +21,8 @@ import KeywordFilter from "./KeywordFilter";
 import AdvancedFilter from "./AdvancedFilter";
 import QuickSearch from "./QuickSearch";
 import TextField from "@mui/material/TextField";
+import SettingsIcon from "@mui/icons-material/Settings";
+import TutorialWindow from "./TutotrialWindow";
 
 interface Paper {
     title: string;
@@ -35,7 +37,8 @@ interface Paper {
     id_value: number
 }
 
-const DocumentSearch = ({apiKey}) => {
+const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
+    const [showTutorial, setShowTutorial] = React.useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
     const [loadingBar, setloadingBar] = useState(false);
@@ -279,6 +282,14 @@ const DocumentSearch = ({apiKey}) => {
         }
     };
 
+    const openTutorialWindow = () => {
+        setShowTutorial(true)
+    };
+
+    const closeTutorialWindow = () => {
+        setShowTutorial(false);
+    }
+
 
     useEffect(() => {
         // Function to handle storage updates
@@ -367,7 +378,32 @@ const DocumentSearch = ({apiKey}) => {
                 </DialogContent>
             </Dialog>
 
-            <QuickSearch setSearchTerm={setSearchTerm} handleClickSearchBtn={handleClickSearchBtn} />
+            <TutorialWindow
+                showTutorial={showTutorial}
+                closeTutorialWindow={closeTutorialWindow}
+                apiKey={apiKey}
+                handleApiKeyChange={handleApiKeyChange}
+            />
+
+            <div style={{ display: "flex", justifyContent: "space-between"}}>
+                <QuickSearch
+                    setSearchTerm={setSearchTerm}
+                    handleClickSearchBtn={handleClickSearchBtn}
+                />
+                <IconButton
+                    className={apiKey ? '' : 'attention-pulse'}
+                    aria-label="Endoc API Key help"
+                    size="medium"
+                    sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%"
+                    }}
+                    onClick={openTutorialWindow}
+                >
+                    <SettingsIcon fontSize="inherit" />
+                </IconButton>
+            </div>
 
             <div className="search-container">
                 <TextField
@@ -385,36 +421,42 @@ const DocumentSearch = ({apiKey}) => {
                     onKeywordsChange={handleKeywordsChange}
                 />
 
-                {
-                    advancedFilters.map( obj => {
-                        return (
-                            <AdvancedFilter
-                                key={obj.id}
-                                id={obj.id}
-                                filterType={obj.filterType}
-                                values={obj.values}
-                                condition={obj.condition}
-                                closeFilter={closeFilter}
-                                updateAdvancedFilter={updateAdvancedFilter}
-                            />
-                        )
-                    })
-                }
-                <Tooltip title="Add Filter">
-                    <IconButton
-                        aria-label="Add Filter"
-                        size="medium"
-                        onClick={addFilter}
-                        sx={{
-                            m: 0,
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                        }}
-                    >
-                        <AddBoxIcon fontSize="inherit" />
-                    </IconButton>
-                </Tooltip>
+
+                <div style={{ display: "flex"}}>
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {
+                            advancedFilters.map( obj => {
+                                return (
+                                    <AdvancedFilter
+                                        key={obj.id}
+                                        id={obj.id}
+                                        filterType={obj.filterType}
+                                        values={obj.values}
+                                        condition={obj.condition}
+                                        closeFilter={closeFilter}
+                                        updateAdvancedFilter={updateAdvancedFilter}
+                                    />
+                                )
+                            })
+                        }
+                    </div>
+                    <Tooltip title="Add Filter">
+                        <IconButton
+                            aria-label="Add Filter"
+                            size="medium"
+                            onClick={addFilter}
+                            sx={{
+                                m: 0,
+                                flexShrink: 0,
+                                width: 32,
+                                height: 32,
+                                borderRadius: '50%',
+                            }}
+                        >
+                            <AddBoxIcon fontSize="inherit" />
+                        </IconButton>
+                    </Tooltip>
+                </div>
 
                 {!apiKey.trim() ? (
                     <Tooltip
