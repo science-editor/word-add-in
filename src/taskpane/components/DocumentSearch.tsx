@@ -94,6 +94,15 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
 
         for (const filterObj of advancedFilters){
 
+            // Exclude free form filters without any values. Otherwise, these would be submitted to the backend and cause trouble
+            if (
+                !filterObj.values.length
+                &&
+                ['publication_year', 'author_full_name', 'author_given_name', 'author_family_name', 'title', 'venue', 'doi'].includes(filterObj.filterType)
+            ) {
+                continue;
+            }
+
             const conditionStr = filterObj.condition === 'true' ? '' : '!'
             let filterTypeStr = ''
             let valuesStr = ''
