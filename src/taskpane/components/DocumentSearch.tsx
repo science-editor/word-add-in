@@ -9,20 +9,14 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Tooltip from "@mui/material/Tooltip";
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import IconButton from "@mui/material/IconButton";
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import CloseIcon from '@mui/icons-material/Close';
 import AddBoxIcon from '@mui/icons-material/AddBox';
-import GoogleScholarChip from "./GoogleScholarChip";
-import DOIChip from "./DOIChip";
 import KeywordFilter from "./KeywordFilter";
 import AdvancedFilter from "./AdvancedFilter";
 import QuickSearch from "./QuickSearch";
 import TextField from "@mui/material/TextField";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TutorialWindow from "./TutotrialWindow";
+import PaperWindow from "./PaperWindow";
 
 interface Paper {
     title: string;
@@ -323,69 +317,11 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
 
     return (
         <>
-            <Dialog
-                open={Boolean(expandedPaper)}
-                onClose={() => setExpandedPaper(null)}
-                fullWidth
-                maxWidth="md"
-                scroll="body"
-            >
-                <DialogActions>
-                    <IconButton
-                        aria-label="Read paper"
-                        size="medium"
-                        sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: "50%"
-                        }}
-                        onClick={() => handleClickZoteroBtn(expandedPaper)}
-                    >
-                        <img
-                            src='https://raw.githubusercontent.com/science-editor/word-add-in/refs/heads/main/assets/zotero-icon.ico'
-                            alt="Add to Zotero"
-                            width={20}
-                            height={20}
-                        />
-                    </IconButton>
-                    <IconButton
-                        aria-label="Read paper"
-                        size="medium"
-                        sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: "50%"
-                        }}
-                        onClick={() => setExpandedPaper(null)}
-                    >
-                        <CloseIcon fontSize="inherit" />
-                    </IconButton>
-                </DialogActions>
-                <DialogTitle sx={{ fontWeight: 'bold' }}>
-                    {expandedPaper?.title}
-                </DialogTitle>
-                <DialogContent>
-                    <p>
-                        Authors:{' '}
-                        {expandedPaper?.authors.map(
-                            (author) => `${author?.FamilyName}, ${author?.GivenName[0]}. `
-                        )}
-                    </p>
-                    <p>Year: {expandedPaper?.year}</p>
-                    <DOIChip
-                        paper={expandedPaper}
-                    />
-                    <GoogleScholarChip
-                        paper={expandedPaper}
-                    />
-                </DialogContent>
-                <DialogContent dividers>
-                    <p>{expandedPaper?.abstract ? expandedPaper.abstract : 'Abstract not available for this paper.'} </p>
-                </DialogContent>
-                <DialogContent dividers>
-                    <p>{expandedPaper?.fullPaper ? expandedPaper.fullPaper : 'Fully body not available for this paper.'} </p>
-                </DialogContent>
-            </Dialog>
+            <PaperWindow
+                expandedPaper={expandedPaper}
+                setExpandedPaper={setExpandedPaper}
+                handleClickZoteroBtn={handleClickZoteroBtn}
+            />
 
             <TutorialWindow
                 showTutorial={showTutorial}
