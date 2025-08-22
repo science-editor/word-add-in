@@ -1,23 +1,25 @@
+// Libraries
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { nanoid } from "nanoid";
-import { DOCUMENT_SEARCH, PAGINATED_SEARCH, SINGLE_PAPER_QUERY, ADD_PAPER_TO_ZOTERO } from "../schemas.js";
 import { toast } from 'react-toastify';
-import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
 import Tooltip from "@mui/material/Tooltip";
-import MenuBookIcon from '@mui/icons-material/MenuBook';
+import LinearProgress from '@mui/material/LinearProgress';
+import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
 import IconButton from "@mui/material/IconButton";
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import SettingsIcon from "@mui/icons-material/Settings";
+
+// Local
 import KeywordFilter from "./KeywordFilter";
 import AdvancedFilter from "./AdvancedFilter";
 import QuickSearch from "./QuickSearch";
-import TextField from "@mui/material/TextField";
-import SettingsIcon from "@mui/icons-material/Settings";
 import TutorialWindow from "./TutotrialWindow";
 import PaperWindow from "./PaperWindow";
 import SearchResultsPanel from "./SearchResultsPanel";
+import { DOCUMENT_SEARCH, PAGINATED_SEARCH, SINGLE_PAPER_QUERY, ADD_PAPER_TO_ZOTERO } from "../schemas.js";
 
 interface Paper {
     title: string;
@@ -33,8 +35,8 @@ interface Paper {
     id_value: number
 }
 
-const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
-    const [showTutorial, setShowTutorial] = React.useState(false);
+const Panel = ({apiKey, handleApiKeyChange}) => {
+    const [showTutorialWindow, setShowTutorialWindow] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
     const [loadingBar, setloadingBar] = useState(false);
@@ -289,11 +291,11 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
     };
 
     const openTutorialWindow = () => {
-        setShowTutorial(true)
+        setShowTutorialWindow(true)
     };
 
     const closeTutorialWindow = () => {
-        setShowTutorial(false);
+        setShowTutorialWindow(false);
     }
 
 
@@ -321,7 +323,7 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
     return (
         <>
             <TutorialWindow
-                showTutorial={showTutorial}
+                showTutorialWindow={showTutorialWindow}
                 closeTutorialWindow={closeTutorialWindow}
                 apiKey={apiKey}
                 handleApiKeyChange={handleApiKeyChange}
@@ -489,4 +491,4 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
 
 };
 
-export default DocumentSearch;
+export default Panel;

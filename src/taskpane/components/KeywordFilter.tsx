@@ -1,10 +1,12 @@
+// Libraries
 import React, { useState, SyntheticEvent } from "react";
+import { useLazyQuery } from "@apollo/client";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
-import { useLazyQuery } from "@apollo/client";
+
+// Local
 import { KEYWORD_SUGGESTIONS } from "../schemas.js";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 // Props: parent passes selected keywords and a callback to update them
 interface ChipAutocompleteProps {

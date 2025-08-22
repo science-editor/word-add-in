@@ -1,6 +1,5 @@
+// Libraries
 import * as React from "react";
-import "../taskpane.css";
-import DocumentSearch from "./DocumentSearch";
 import {
     ApolloClient,
     InMemoryCache,
@@ -11,16 +10,17 @@ import {
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { toast } from "react-toastify";
-import IconButton from "@mui/material/IconButton";
-import TutorialWindow from "./TutotrialWindow";
-import SettingsIcon from '@mui/icons-material/Settings';
+
+// Local
+import "../taskpane.css";
+import Panel from "./Panel";
+
 
 const GRAPHQL_URL =
     process.env.NODE_ENV === "production"
         ? "https://endoc.ethz.ch/graphql"
         : "https://localhost:3001/proxy";
 
-// Function to create Apollo Client based on API key
 function createClient(apiKey: string) {
     const httpLink = createHttpLink({ uri: GRAPHQL_URL });
 
@@ -31,7 +31,6 @@ function createClient(apiKey: string) {
         },
     }));
 
-    // ** Error Link **
     const errorLink = onError(({ graphQLErrors, networkError }) => {
         if (graphQLErrors) {
             graphQLErrors.forEach(({ message, locations, path }) => {
@@ -51,7 +50,6 @@ function createClient(apiKey: string) {
         }
     });
 
-    // Compose links: errorLink first so it sees everything
     const link = from([errorLink, authLink, httpLink]);
 
     return new ApolloClient({
@@ -65,23 +63,20 @@ const App = () => {
     const storedKey = localStorage.getItem("x_api_key") || "";
     const [apiKey, setApiKey] = React.useState(storedKey);
     const [client, setClient] = React.useState(() => createClient(storedKey));
-    const endocURL = "https://endoc.ethz.ch/";
-
 
     const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setApiKey(value);
-        localStorage.setItem("x_api_key", value);
-        setClient(createClient(value));
-        console.log("API key saved and client updated");
-    };
+        const newApiKey = e.target.value;
 
+        setApiKey(newApiKey);
+        setClient(createClient(newApiKey));
+        localStorage.setItem("x_api_key", newApiKey);
+    };
 
 
     return (
         <ApolloProvider client={client}>
             <div className="root">
-                <DocumentSearch
+                <Panel
                     apiKey={apiKey}
                     handleApiKeyChange={handleApiKeyChange}
                 />

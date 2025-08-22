@@ -1,3 +1,4 @@
+// Libraries
 import * as React from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -12,14 +13,13 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import TextField from "@mui/material/TextField";
 
-function TutorialWindow({ showTutorial, closeTutorialWindow, apiKey, handleApiKeyChange }) {
+function TutorialWindow({ showTutorialWindow, closeTutorialWindow, apiKey, handleApiKeyChange }) {
     const endocURL = "https://endoc.ethz.ch/";
     const zoteroDownloadURL = "https://www.zotero.org/download/";
-    const zoteroPluginURL = "https://www.zotero.org/support/word_processor_plugin_installation"
 
     return (
         <Dialog
-            open={Boolean(showTutorial)}
+            open={Boolean(showTutorialWindow)}
             onClose={() => closeTutorialWindow(null)}
             fullWidth
             maxWidth="md"

@@ -1,11 +1,12 @@
+// Libraries
 import React, { useEffect } from "react";
 import { FormControl, FormControlLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, Slider } from "@mui/material";
-import Chip from "@mui/material/Chip";
-import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
 import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
 
 const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateAdvancedFilter}) => {
     const MIN = 1940;

@@ -1,12 +1,15 @@
+// Libraries
 import * as React from "react";
-import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import DialogTitle from "@mui/material/DialogTitle";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
+
+// Local
 import DOIChip from "./DOIChip";
 import GoogleScholarChip from "./GoogleScholarChip";
-import Dialog from "@mui/material/Dialog";
 
 function PaperWindow( {expandedPaper, setExpandedPaper, handleClickZoteroBtn } ) {
 

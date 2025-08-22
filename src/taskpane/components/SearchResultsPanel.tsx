@@ -1,8 +1,12 @@
+// Libraries
 import * as React from "react";
 import { nanoid } from "nanoid";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+
+// Local
+import PaperMetaLine from "./PaperMetaLine";
 
 function SearchResultsPanel( {foundPapers, handleClickReadPaper, handleClickZoteroBtn}){
     return (
@@ -34,14 +38,10 @@ function SearchResultsPanel( {foundPapers, handleClickReadPaper, handleClickZote
                                 <h3>{truncatedTitle}</h3>
                             )}
 
-                            <span>
-                                {paper.authors.map(
-                                    (author) => `${author?.FamilyName}, ${author?.GivenName[0]}. `
-                                )}
-                                {" • "}
-                            </span>
-                            <span>{paper.venue}{" • "}</span>
-                            <span>{paper.year}</span>
+                            <PaperMetaLine
+                                paper={paper}
+                            />
+
                         </div>
 
                         <div className='paper-box-buttons-container'>
