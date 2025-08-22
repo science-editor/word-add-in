@@ -17,11 +17,13 @@ import TextField from "@mui/material/TextField";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TutorialWindow from "./TutotrialWindow";
 import PaperWindow from "./PaperWindow";
+import SearchResultsPanel from "./SearchResultsPanel";
 
 interface Paper {
     title: string;
     authors: any[];
     year: number;
+    venue: string;
     abstract: string;
     fullPaper: string
     collection: string;
@@ -198,6 +200,7 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
                     title: paper.Title,
                     authors: paper.Author,
                     year: paper.PublicationDate.Year,
+                    venue: paper.Venue,
                     abstract: null, //SINGLE_PAPER_QUERY
                     fullPaper: null, //SINGLE_PAPER_QUERY
                     collection: "S2AG",
@@ -317,12 +320,6 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
 
     return (
         <>
-            <PaperWindow
-                expandedPaper={expandedPaper}
-                setExpandedPaper={setExpandedPaper}
-                handleClickZoteroBtn={handleClickZoteroBtn}
-            />
-
             <TutorialWindow
                 showTutorial={showTutorial}
                 closeTutorialWindow={closeTutorialWindow}
@@ -476,86 +473,17 @@ const DocumentSearch = ({apiKey, handleApiKeyChange}) => {
                 </Box>
             }
 
-            {foundPapers?.map(paper => {
-                const titleTooLong = paper.title.length > 100;
-                const truncatedTitle = titleTooLong
-                    ? `${paper.title.substring(0, 100)}…`
-                    : paper.title;
+            <SearchResultsPanel
+                foundPapers={foundPapers}
+                handleClickReadPaper={handleClickReadPaper}
+                handleClickZoteroBtn={handleClickZoteroBtn}
+            />
 
-                return (
-                    <div className='paper-box' key={nanoid()}>
-                        <div className='paper-box-meta-container'>
-                            {titleTooLong ? (
-                                <Tooltip
-                                    title={paper.title}
-                                    componentsProps={{
-                                        tooltip: {
-                                            sx: {
-                                                fontSize: '1.2rem',
-                                                lineHeight: 1.4,
-                                            }
-                                        }
-                                    }}
-                                >
-                                    <h3>{truncatedTitle}</h3>
-                                </Tooltip>
-                            ) : (
-                                <h3>{truncatedTitle}</h3>
-                            )}
-
-                            <p>
-                                Authors:{' '}
-                                {paper.authors.map(
-                                    (author) => `${author?.FamilyName}, ${author?.GivenName[0]}. `
-                                )}
-                            </p>
-                            <p>Year: {paper.year}</p>
-                        </div>
-
-                        <div className='paper-box-buttons-container'>
-                            <Tooltip
-                                title={"Expand this paper."}
-                            >
-                                <IconButton
-                                    aria-label="Read paper"
-                                    size="medium"
-                                    sx={{
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: "50%"
-                                    }}
-                                    onClick={() => handleClickReadPaper(paper)}
-                                >
-                                    <MenuBookIcon />
-                                </IconButton>
-                            </Tooltip>
-
-                            <Tooltip
-                                title={"Add this paper to Zotero."}
-                            >
-                                <IconButton
-                                    aria-label="Read paper"
-                                    size="medium"
-                                    sx={{
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: "50%"
-                                    }}
-                                    onClick={() => handleClickZoteroBtn(paper)}
-                                >
-                                    <img
-                                        src='https://raw.githubusercontent.com/science-editor/word-add-in/refs/heads/main/assets/zotero-icon.ico'
-                                        alt="Add to Zotero"
-                                        width={20}
-                                        height={20}
-                                    />
-                                </IconButton>
-                            </Tooltip>
-                        </div>
-
-                    </div>
-                );
-            })}
+            <PaperWindow
+                expandedPaper={expandedPaper}
+                setExpandedPaper={setExpandedPaper}
+                handleClickZoteroBtn={handleClickZoteroBtn}
+            />
         </>
     );
 

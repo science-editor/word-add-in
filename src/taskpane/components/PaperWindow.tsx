@@ -59,6 +59,7 @@ function PaperWindow( {expandedPaper, setExpandedPaper, handleClickZoteroBtn } )
                         (author) => `${author?.FamilyName}, ${author?.GivenName[0]}. `
                     )}
                 </p>
+                <p>Venue: {expandedPaper?.venue}</p>
                 <p>Year: {expandedPaper?.year}</p>
                 <DOIChip
                     paper={expandedPaper}
