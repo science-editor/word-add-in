@@ -34,13 +34,14 @@ function SearchResultsPanel( {foundPapers, handleClickReadPaper, handleClickZote
                                 <h3>{truncatedTitle}</h3>
                             )}
 
-                            <p>
+                            <span>
                                 {paper.authors.map(
                                     (author) => `${author?.FamilyName}, ${author?.GivenName[0]}. `
                                 )}
-                            </p>
-                            <p>{paper.venue}</p>
-                            <p>{paper.year}</p>
+                                {" • "}
+                            </span>
+                            <span>{paper.venue}{" • "}</span>
+                            <span>{paper.year}</span>
                         </div>
 
                         <div className='paper-box-buttons-container'>
