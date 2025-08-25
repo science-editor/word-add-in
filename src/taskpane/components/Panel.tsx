@@ -203,14 +203,16 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
                     authors: paper.Author,
                     year: paper.PublicationDate.Year,
                     venue: paper.Venue,
-                    abstract: null, //SINGLE_PAPER_QUERY
-                    fullPaper: null, //SINGLE_PAPER_QUERY
-                    collection: "S2AG",
+                    abstract: null, // Abstract and full paper will be retrieved later when user expands a paper
+                    fullPaper: null,
+                    collection: paper._id.split("_")[0],
                     DOI: paper.DOI,
                     idField: "id_int",
                     idType: "int",
                     idValue: paper.id_int.toString()
                 }));
+
+                console.log(convertedPapers);
 
                 setFoundPapers(convertedPapers);
                 setloadingBar(false);
