@@ -36,6 +36,8 @@ interface Paper {
 }
 
 const Panel = ({apiKey, handleApiKeyChange}) => {
+
+    // States
     const [showTutorialWindow, setShowTutorialWindow] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
@@ -52,10 +54,133 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
             }
         ]
     );
+
+    // Apollo hooks for GraphQL queries and mutations
     const [getDocuments, { loading: loadingDocs, error: errorDocs, data: dataDocs }] = useLazyQuery(DOCUMENT_SEARCH);
     const [getPaperMeta, { loading: loadingMeta, error: errorMeta, data: dataMeta }] = useLazyQuery(PAGINATED_SEARCH);
     const [getPaperContent, { loading: loadingContent, error: errorContent, data: dataContent }] = useLazyQuery(SINGLE_PAPER_QUERY);
     const [addPaperToZotero, { loading, error, data }] = useMutation(ADD_PAPER_TO_ZOTERO)
+
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++ Tutorial Window +++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    const openTutorialWindow = () => {
+        setShowTutorialWindow(true)
+    };
+
+    const closeTutorialWindow = () => {
+        setShowTutorialWindow(false);
+    }
+
+
+    /* ++++++++++++++++++++++++++++++++++++++++++++++ Paper Retrieval +++++++++++++++++++++++++++++++++++++++++++++++ */
+
+    const handleClickSearchBtn = async (newSearchTerm) => {
+        if (!localStorage.getItem("x_api_key")){
+            toast.error('Please provide a valid API key first.', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+            return;
+        }
+
+        if (!newSearchTerm){
+            toast.error('Please provide at least one search term', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+            return;
+        }
+
+        setFoundPapers(null)
+        setloadingBar(true);
+
+        // Convert keywords and advanced filters into a backend readable format
+        const filterObjsAsStrings = convertAdvancedFiltersToStrings()
+        const combinedKeywordsAndFilters = filterObjsAsStrings.length > 0 ? [...keywords, ...filterObjsAsStrings] : keywords;
+        console.log('--- Keywords and Filters ---')
+        console.log(combinedKeywordsAndFilters)
+        console.log('--- --- ---')
+
+        try {
+            const result = await getDocuments({
+                variables: {
+                    ranking_variable: newSearchTerm,
+                    keywords: combinedKeywordsAndFilters
+                }
+            });
+
+            if (result.data) {
+                const metaResult = await getPaperMeta({
+                    variables: {
+                        paper_list: result.data.documentSearch.response.paper_list,
+                        keywords: combinedKeywordsAndFilters
+                    }
+                });
+
+                console.log('--- Retrieved Papers ---')
+                console.log(metaResult.data.paginatedSearch.response);
+                console.log('--- --- ---')
+
+                const fetchedPapers = metaResult.data.paginatedSearch.response;
+                const convertedPapers = fetchedPapers.map(paper => ({
+                    title: paper.Title,
+                    authors: paper.Author,
+                    year: paper.PublicationDate.Year,
+                    venue: paper.Venue,
+                    abstract: null, // Abstract and full paper will be retrieved later when user expands a paper
+                    fullPaper: null,
+                    collection: paper._id.split("_")[0],
+                    DOI: paper.DOI,
+                    idField: "id_int",
+                    idType: "int",
+                    idValue: paper.id_int.toString()
+                }));
+
+                setFoundPapers(convertedPapers);
+                setloadingBar(false);
+            }
+        } catch (error) {
+            setloadingBar(false)
+            console.error('GraphQL Error:', error);
+            toast.error('Failed to retrieve papers. Check console for details.', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+        }
+    };
+
+    const handleClickReadPaper = async (paper) => {
+        try {
+            const contentResult = await getPaperContent({
+                variables: {
+                    paper_id: {
+                        collection: paper.collection,
+                        id_field: paper.idField,
+                        id_type: paper.idType,
+                        id_value: paper.idValue,
+                    }
+                }
+            });
+
+            const paperContent = contentResult.data.singlePaper.response.Content
+
+            const abstract = paperContent.Abstract;
+            const fullPaper = paperContent.Fullbody;
+
+            const paperWithContent = {
+                ...paper,
+                abstract,
+                fullPaper
+            };
+
+            setExpandedPaper(paperWithContent);
+        } catch (error) {
+            console.error('Error loading paper content:', error);
+            toast.error('Failed to load paper content. Please try again later or check console for details.', {
+                icon: <span role="img" aria-label="warning">⚠️</span>,
+            });
+        }
+    };
+
+    /* ++++++++++++++++++++++++++++++++++++++ Keywords and Filters Management +++++++++++++++++++++++++++++++++++++++ */
 
     const handleKeywordsChange = (newKeywords: string[]) => {
         setKeywords(newKeywords);
@@ -91,7 +216,6 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
         const filterObjsAsStrings = []
 
         for (const filterObj of advancedFilters){
-
             // Exclude free form filters without any values. Otherwise, these would be submitted to the backend and cause trouble
             if (
                 !filterObj.values.length
@@ -154,78 +278,8 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
         return filterObjsAsStrings;
     }
 
-    const handleClickSearchBtn = async (newSearchTerm) => {
-        if (!localStorage.getItem("x_api_key")){
-            toast.error('Please provide a valid API key first.', {
-                icon: <span role="img" aria-label="warning">⚠️</span>,
-            });
-            return;
-        }
 
-        if (!newSearchTerm){
-            toast.error('Please provide at least one search term', {
-                icon: <span role="img" aria-label="warning">⚠️</span>,
-            });
-            return;
-        }
-
-        setFoundPapers(null)
-        setloadingBar(true);
-
-        // Prepare keywords and advanced filters for the backend
-        const filterObjsAsStrings = convertAdvancedFiltersToStrings()
-        const combinedKeywordsAndFilters = filterObjsAsStrings.length > 0 ? [...keywords, ...filterObjsAsStrings] : keywords;
-        console.log('--- --- ---')
-        console.log(combinedKeywordsAndFilters)
-        console.log('--- --- ---')
-
-        try {
-            const result = await getDocuments({
-                variables: {
-                    ranking_variable: newSearchTerm,
-                    keywords: combinedKeywordsAndFilters
-                }
-            });
-
-            if (result.data) {
-                const metaResult = await getPaperMeta({
-                    variables: {
-                        paper_list: result.data.documentSearch.response.paper_list,
-                        keywords: combinedKeywordsAndFilters
-                    }
-                });
-
-                console.log(metaResult.data.paginatedSearch.response);
-
-                const fetchedPapers = metaResult.data.paginatedSearch.response;
-                const convertedPapers = fetchedPapers.map(paper => ({
-                    title: paper.Title,
-                    authors: paper.Author,
-                    year: paper.PublicationDate.Year,
-                    venue: paper.Venue,
-                    abstract: null, // Abstract and full paper will be retrieved later when user expands a paper
-                    fullPaper: null,
-                    collection: paper._id.split("_")[0],
-                    DOI: paper.DOI,
-                    idField: "id_int",
-                    idType: "int",
-                    idValue: paper.id_int.toString()
-                }));
-
-                console.log(convertedPapers);
-
-                setFoundPapers(convertedPapers);
-                setloadingBar(false);
-            }
-        } catch (error) {
-            setloadingBar(false)
-            console.error('GraphQL Error:', error);
-            toast.error('Failed to retrieve papers. Check console for details.', {
-                icon: <span role="img" aria-label="warning">⚠️</span>,
-            });
-        }
-    };
-
+    /* +++++++++++++++++++++++++++++++++++++++++++++++++++ Zotero +++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
     const handleClickZoteroBtn = async (paper)=> {
         try {
@@ -259,47 +313,8 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
         }
     }
 
-    const handleClickReadPaper = async (paper) => {
-        try {
-            const contentResult = await getPaperContent({
-                variables: {
-                    paper_id: {
-                        collection: paper.collection,
-                        id_field: paper.idField,
-                        id_type: paper.idType,
-                        id_value: paper.idValue,
-                    }
-                }
-            });
 
-            const paperContent = contentResult.data.singlePaper.response.Content
-
-            const abstract = paperContent.Abstract;
-            const fullPaper = paperContent.Fullbody;
-
-            const paperWithContent = {
-                ...paper,
-                abstract,
-                fullPaper
-            };
-
-            setExpandedPaper(paperWithContent);
-        } catch (error) {
-            console.error('Error loading paper content:', error);
-            toast.error('Failed to load paper content. Please try again later or check console for details.', {
-                icon: <span role="img" aria-label="warning">⚠️</span>,
-            });
-        }
-    };
-
-    const openTutorialWindow = () => {
-        setShowTutorialWindow(true)
-    };
-
-    const closeTutorialWindow = () => {
-        setShowTutorialWindow(false);
-    }
-
+    /* +++++++++++++++++++++++++++++++++++++++++++++++++ Use Effects ++++++++++++++++++++++++++++++++++++++++++++++++ */
 
     useEffect(() => {
         // Function to handle storage updates
@@ -321,6 +336,8 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
         };
     }, []);
 
+
+    /* +++++++++++++++++++++++++++++++++++++++++++++++++++++ JSX ++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
     return (
         <>
