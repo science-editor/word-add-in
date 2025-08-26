@@ -1,4 +1,6 @@
-# Host the Word add-in locally (for developpers)
+# Host the Word add-in locally (for developers)
+
+### Installation
 
 Make sure you have Word installed before proceeding.
 
