@@ -1,8 +1,11 @@
 # Host the Word add-in locally (for developers)
 
-### Installation
+### Requirements
 
-Make sure you have Word installed before proceeding.
++ Word installed on your machine.
++ Node Version 18 or higher.
+
+### Installation
 
 1. Clone this repo.
 2. Run `npm install`
