@@ -72,33 +72,32 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
         setShowTutorialWindow(false);
     }
 
+    /* +++++++++++++++++++++++++++++++++++++++++++++ Semantic Search Bar ++++++++++++++++++++++++++++++++++++++++++++ */
+
+    const [touchedSemanticSearchBar, setTouchedSemanticSearchBar] = useState(false);
+    const wordCount = searchTerm.trim().split(/\s+/).filter(Boolean).length;
+    const semanticSearchBarInvalidInput = touchedSemanticSearchBar && wordCount > 0 && wordCount < 5;
+
+    const handleChangeSemanticSearchBar = (event) => {
+        const value = event.target.value;
+        setSearchTerm(value);
+
+        // Reset touchedSemanticSearchBar if user clears the input
+        if (value.trim() === "") {
+            setTouchedSemanticSearchBar(false);
+        }
+    };
+
 
     /* ++++++++++++++++++++++++++++++++++++++++++++++ Paper Retrieval +++++++++++++++++++++++++++++++++++++++++++++++ */
 
     const handleClickSearchBtn = async (newSearchTerm) => {
-        if (!localStorage.getItem("x_api_key")){
-            toast.error('Please provide a valid API key first.', {
-                icon: <span role="img" aria-label="warning">⚠️</span>,
-            });
-            return;
-        }
-
-        if (!newSearchTerm){
-            toast.error('Please provide at least one search term', {
-                icon: <span role="img" aria-label="warning">⚠️</span>,
-            });
-            return;
-        }
-
         setFoundPapers(null)
         setloadingBar(true);
 
         // Convert keywords and advanced filters into a backend readable format
         const filterObjsAsStrings = convertAdvancedFiltersToStrings()
         const combinedKeywordsAndFilters = filterObjsAsStrings.length > 0 ? [...keywords, ...filterObjsAsStrings] : keywords;
-        console.log('--- Keywords and Filters ---')
-        console.log(combinedKeywordsAndFilters)
-        console.log('--- --- ---')
 
         try {
             const result = await getDocuments({
@@ -107,6 +106,14 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
                     keywords: combinedKeywordsAndFilters
                 }
             });
+
+            if (result.data.documentSearch.status === 'failure'){
+                toast.error(result.data.documentSearch.message, {
+                    icon: <span role="img" aria-label="warning">⚠️</span>,
+                });
+                setloadingBar(false)
+                return;
+            }
 
             if (result.data) {
                 const metaResult = await getPaperMeta({
@@ -374,9 +381,12 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
                     label="Semantic Search"
                     placeholder="Semantic discovery - Your text will be used to rank the filtered papers"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleChangeSemanticSearchBar}
+                    onBlur={() => setTouchedSemanticSearchBar(true)}
                     size="small"
                     fullWidth
+                    error={semanticSearchBarInvalidInput}
+                    helperText={semanticSearchBarInvalidInput ? "Provide at least 5 terms" : ""}
                 />
 
                 <KeywordFilter
@@ -481,7 +491,7 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
                     <button
                         className="search-btn"
                         onClick={() => handleClickSearchBtn(searchTerm)}
-                        disabled={!apiKey.trim() || loadingBar}
+                        disabled={!apiKey.trim() || loadingBar || !searchTerm || semanticSearchBarInvalidInput}
                     >
                         Search
                     </button>
