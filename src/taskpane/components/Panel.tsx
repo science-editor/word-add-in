@@ -98,9 +98,6 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
         // Convert keywords and advanced filters into a backend readable format
         const filterObjsAsStrings = convertAdvancedFiltersToStrings()
         const combinedKeywordsAndFilters = filterObjsAsStrings.length > 0 ? [...keywords, ...filterObjsAsStrings] : keywords;
-        console.log('--- Keywords and Filters ---')
-        console.log(combinedKeywordsAndFilters)
-        console.log('--- --- ---')
 
         try {
             const result = await getDocuments({
@@ -109,6 +106,14 @@ const Panel = ({apiKey, handleApiKeyChange}) => {
                     keywords: combinedKeywordsAndFilters
                 }
             });
+
+            if (result.data.documentSearch.status === 'failure'){
+                toast.error(result.data.documentSearch.message, {
+                    icon: <span role="img" aria-label="warning">⚠️</span>,
+                });
+                setloadingBar(false)
+                return;
+            }
 
             if (result.data) {
                 const metaResult = await getPaperMeta({
