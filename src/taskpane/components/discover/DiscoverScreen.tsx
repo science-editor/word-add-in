@@ -1,3 +1,4 @@
+// src/taskpane/components/discover/DiscoverScreen.tsx
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
@@ -7,17 +8,16 @@ import LinearProgress from "@mui/material/LinearProgress";
 
 import { SemanticSearchInput } from "../panel/SemanticSearchInput";
 import KeywordFilter from "../KeywordFilter";
-import { FiltersSection } from "../panel/FiltersSection";
 import SearchResultsPanel from "../SearchResultsPanel";
 import { AdvancedFilterState, Paper } from "../../types";
 import { SkeletonList } from "./SkeletonList";
+import { FiltersDrawer, FiltersLauncher } from "./FiltersDrawer";
 
 export function DiscoverScreen({
   apiKeyPresent,
   goToSettings,
   searchTerm,
   setSearchTerm,
-  invalidSemantic,
   setTouched,
   keywords,
   setKeywords,
@@ -36,7 +36,6 @@ export function DiscoverScreen({
 
   searchTerm: string;
   setSearchTerm: (v: string) => void;
-  invalidSemantic: boolean;
   setTouched: (b: boolean) => void;
 
   keywords: string[];
@@ -55,15 +54,14 @@ export function DiscoverScreen({
   onReadPaper: (p: Paper) => void;
   onAddToZotero: (p: Paper) => void;
 }) {
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
+
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, mx: "auto" }}>
       {!apiKeyPresent && (
         <Alert
           severity="warning"
-          sx={{
-            mb: 2,
-            "& .MuiAlert-message": { width: "100%" },
-          }}
+          sx={{ mb: 2, "& .MuiAlert-message": { width: "100%" } }}
           action={
             <Button color="inherit" size="small" onClick={goToSettings}>
               Go to Settings
@@ -79,24 +77,28 @@ export function DiscoverScreen({
         <SemanticSearchInput
           value={searchTerm}
           onChange={(v) => setSearchTerm(v)}
-          invalid={invalidSemantic}
           setTouched={setTouched}
+          minWords={5}
+          showHintIfShort
         />
 
         <KeywordFilter selectedKeywords={keywords} onKeywordsChange={setKeywords} />
 
-        <FiltersSection
-          filters={advancedFilters}
-          onAdd={onAddFilter}
-          onClose={onRemoveFilter}
-          onUpdate={onUpdateFilter}
-        />
+        {/* Filters launcher just above the Search button; badge sits next to text */}
+        <FiltersLauncher count={advancedFilters.length} onOpen={() => setFiltersOpen(true)} />
 
+        {/* Full-width Search button, but same control height */}
         <Button
           variant="contained"
+          size="small"
           onClick={() => onRunSearch(searchTerm)}
-          disabled={!apiKeyPresent || loading || !searchTerm || invalidSemantic}
-          sx={{ textTransform: "none", fontWeight: 600 }}
+          disabled={!apiKeyPresent || loading || !searchTerm}
+          sx={{
+            height: 40,                 // ← same height as inputs
+            width: "100%",
+            textTransform: "none",
+            fontWeight: 600,
+          }}
         >
           Search
         </Button>
@@ -104,16 +106,16 @@ export function DiscoverScreen({
 
       {loading && (
         <>
-          <Box sx={{ width: "100%", mt: 2 }}>
+          <Box sx={{ width: "100%", mt: 3 }}>
             <LinearProgress />
           </Box>
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 3 }} />
           <SkeletonList rows={6} />
         </>
       )}
 
       {!loading && results && (
-        <Box sx={{ mt: 2 }}>
+        <Box sx={{ mt: 3 }}>
           <SearchResultsPanel
             foundPapers={results || []}
             handleClickReadPaper={onReadPaper}
@@ -121,6 +123,16 @@ export function DiscoverScreen({
           />
         </Box>
       )}
+
+      {/* Side drawer for filters */}
+      <FiltersDrawer
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        filters={advancedFilters}
+        onAdd={onAddFilter}
+        onRemove={onRemoveFilter}
+        onUpdate={onUpdateFilter}
+      />
     </Box>
   );
 }

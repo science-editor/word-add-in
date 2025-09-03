@@ -68,7 +68,6 @@ export default function Panel({
     [searchTerm]
   );
   const [touchedSemantic, setTouchedSemantic] = useState(false);
-  const invalidSemantic = touchedSemantic && wordCount > 0 && wordCount < 5;
 
   // Filter handlers
   const onAddFilter = useCallback(() => {
@@ -195,7 +194,6 @@ export default function Panel({
             goToSettings={() => setTab("settings")}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
-            invalidSemantic={invalidSemantic}
             setTouched={setTouchedSemantic}
             keywords={keywords}
             setKeywords={setKeywords}

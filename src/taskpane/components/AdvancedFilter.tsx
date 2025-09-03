@@ -1,235 +1,240 @@
-// Libraries
+// src/taskpane/components/AdvancedFilter.tsx
 import React, { useEffect } from "react";
-import { FormControl, FormControlLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, Slider } from "@mui/material";
-import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
+import {
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Select,
+  Slider,
+  TextField,
+  Chip,
+  IconButton,
+  Autocomplete,
+  Box,
+  Stack,
+} from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 import CloseIcon from "@mui/icons-material/Close";
-import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
 
-const AdvancedFilter = ({id, filterType, values, condition, closeFilter, updateAdvancedFilter}) => {
-    const MIN = 1940;
-    const MAX = new Date().getFullYear();
-    const sliderValues = values.length === 2 ? values : [MIN, MAX];
+const CONTROL_SIZE: "small" = "small";
 
-    const handleFilterChange = (event) => {
-        const newSelectedFilterType = event.target.value;
-        updateAdvancedFilter(id, "filterType", newSelectedFilterType);
-        updateAdvancedFilter(id, "values", []);
+/**
+ * NOTE:
+ * - No MUI Grid usage to avoid v1 vs v2 API type conflicts.
+ * - Flex layout keeps all controls aligned, wrapped, and 40px tall.
+ */
+const AdvancedFilter = ({
+  id,
+  filterType,
+  values,
+  condition,
+  closeFilter,
+  updateAdvancedFilter,
+}) => {
+  const MIN = 1940;
+  const MAX = new Date().getFullYear();
+  const sliderValues = Array.isArray(values) && values.length === 2 ? values : [MIN, MAX];
+
+  const handleFilterChange = (event: SelectChangeEvent) => {
+    const newType = event.target.value as string;
+    updateAdvancedFilter(id, "filterType", newType);
+    updateAdvancedFilter(id, "values", []);
+  };
+
+  const handleConditionChange = (event: SelectChangeEvent) => {
+    updateAdvancedFilter(id, "condition", event.target.value as string);
+  };
+
+  const handleValuesChange = (_event: any, newInputValues: any) => {
+    updateAdvancedFilter(id, "values", newInputValues);
+  };
+
+  useEffect(() => {
+    if (filterType === "publication_year_range") {
+      updateAdvancedFilter(id, "values", [MIN, MAX]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterType]);
 
-    const handleConditionChange = (event) => {
-        const newConditionValue = event.target.value;
-        updateAdvancedFilter(id, "condition", newConditionValue);
-    }
+  const needsBool = filterType === "abstract_parsed" || filterType === "fullbody_parsed";
+  const needsIsIsNot =
+    filterType === "publication_year" ||
+    filterType === "publication_year_range" ||
+    filterType === "author_full_name" ||
+    filterType === "author_given_name" ||
+    filterType === "author_family_name" ||
+    filterType === "doi";
+  const needsIncludesExcludes = filterType === "title" || filterType === "venue";
 
-    const handleValuesChange = (_event, newInputValues) => {
-        updateAdvancedFilter(id, "values", newInputValues);
-    }
+  const needsValuesChips =
+    filterType === "title" ||
+    filterType === "venue" ||
+    filterType === "publication_year" ||
+    filterType === "author_full_name" ||
+    filterType === "author_given_name" ||
+    filterType === "author_family_name" ||
+    filterType === "doi";
 
-    // When user selects the publication year range slider, pass the default values to parent component, in case user doesn't adjust the slider
-    useEffect( () => {
-        if (filterType === 'publication_year_range'){
-            updateAdvancedFilter(id, "values", [MIN, MAX]);
-        }
-    }, [filterType])
+  // Enforce consistent 40px control height and 14px font across inputs/selects
+  const controlSx = {
+    "& .MuiInputBase-root": { height: 40 },
+    "& .MuiInputBase-input": { fontSize: 14, pt: 0, pb: 0 },
+    "& .MuiInputLabel-root": { fontSize: 14 },
+  };
 
-    return (
-        <div style={{ display: 'flex'}}>
-            <FormControl
-                fullWidth
-                size="small"
-                sx={{ width: '40%', mr: 1 }}
+  return (
+    <Box
+      sx={{
+        p: 1,
+        borderRadius: 1,
+        border: (t) => `1px dashed ${t.palette.divider}`,
+      }}
+    >
+      {/* Row of controls, wraps cleanly on small widths */}
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 1.5,
+        }}
+      >
+        {/* Type */}
+        <Box sx={{ minWidth: 220, flex: "1 1 220px" }}>
+          <FormControl fullWidth size={CONTROL_SIZE} sx={controlSx}>
+            <InputLabel id={`filter-type-${id}`}>Advanced Filter</InputLabel>
+            <Select
+              labelId={`filter-type-${id}`}
+              value={filterType}
+              label="Advanced Filter"
+              onChange={handleFilterChange}
             >
-                <InputLabel id="advanced-filter-label">Advanced Filter</InputLabel>
-                <Select
-                    labelId="advanced-filter-label"
-                    id="advanced-filter"
-                    value={filterType}
-                    label="Advanced Filter"
-                    onChange={handleFilterChange}
-                >
-                    <MenuItem value="">No Filter</MenuItem>
-                    <MenuItem value="publication_year">Publication Year</MenuItem>
-                    <MenuItem value="publication_year_range">Publication Year Range</MenuItem>
-                    <MenuItem value="author_full_name">Author Full Name</MenuItem>
-                    <MenuItem value="author_given_name">Author Given Name</MenuItem>
-                    <MenuItem value="author_family_name">Author Family Name</MenuItem>
-                    <MenuItem value="title">Title</MenuItem>
-                    <MenuItem value="venue">Venue</MenuItem>
-                    <MenuItem value="doi">DOI</MenuItem>
-                    <MenuItem value="abstract_parsed">Abstract Parsed</MenuItem>
-                    <MenuItem value="fullbody_parsed">Fullbody Parsed</MenuItem>
-                </Select>
+              <MenuItem value="">No Filter</MenuItem>
+              <MenuItem value="publication_year">Publication Year</MenuItem>
+              <MenuItem value="publication_year_range">Publication Year Range</MenuItem>
+              <MenuItem value="author_full_name">Author Full Name</MenuItem>
+              <MenuItem value="author_given_name">Author Given Name</MenuItem>
+              <MenuItem value="author_family_name">Author Family Name</MenuItem>
+              <MenuItem value="title">Title</MenuItem>
+              <MenuItem value="venue">Venue</MenuItem>
+              <MenuItem value="doi">DOI</MenuItem>
+              <MenuItem value="abstract_parsed">Abstract Parsed</MenuItem>
+              <MenuItem value="fullbody_parsed">Fullbody Parsed</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
+        {/* Condition */}
+        {(needsIsIsNot || needsIncludesExcludes) && (
+          <Box sx={{ minWidth: 160, flex: "0 1 160px" }}>
+            <FormControl fullWidth size={CONTROL_SIZE} sx={controlSx}>
+              <InputLabel id={`cond-${id}`}>Condition</InputLabel>
+              <Select
+                labelId={`cond-${id}`}
+                value={condition}
+                label="Condition"
+                onChange={handleConditionChange}
+              >
+                {needsIsIsNot ? (
+                  <>
+                    <MenuItem value="true">IS</MenuItem>
+                    <MenuItem value="false">IS NOT</MenuItem>
+                  </>
+                ) : (
+                  <>
+                    <MenuItem value="true">INCLUDES</MenuItem>
+                    <MenuItem value="false">EXCLUDES</MenuItem>
+                  </>
+                )}
+              </Select>
             </FormControl>
+          </Box>
+        )}
 
-            {
-                (
-                    filterType === "abstract_parsed"
-                    ||
-                    filterType === "fullbody_parsed"
-                )
-                && (
-                    <FormControl
-                        component="fieldset"
-                        size="small"
-                        fullWidth sx={{ width: '100%'}}
-                    >
-                        <RadioGroup
-                            aria-label="include-filter"
-                            name="include-filter"
-                            value={condition}
-                            onChange={handleConditionChange}
-                            row
-                        >
-                            <FormControlLabel value="true" control={<Radio />} label="True" />
-                            <FormControlLabel value="false" control={<Radio />} label="False" />
-                        </RadioGroup>
-                    </FormControl>
-                )
-            }
+        {/* Boolean radio (True/False) */}
+        {needsBool && (
+          <Box sx={{ flex: "0 1 auto" }}>
+            <FormControl size={CONTROL_SIZE}>
+              <RadioGroup
+                row
+                name={`include-${id}`}
+                value={condition}
+                onChange={(e) =>
+                  updateAdvancedFilter(id, "condition", (e.target as HTMLInputElement).value)
+                }
+              >
+                <FormControlLabel value="true" control={<Radio size="small" />} label="True" />
+                <FormControlLabel value="false" control={<Radio size="small" />} label="False" />
+              </RadioGroup>
+            </FormControl>
+          </Box>
+        )}
 
-            {
-                (
-                    filterType === "publication_year"
-                    ||
-                    filterType === "publication_year_range"
-                    ||
-                    filterType === "author_full_name"
-                    ||
-                    filterType === "author_given_name"
-                    ||
-                    filterType === "author_family_name"
-                    ||
-                    filterType === "doi"
-                )
-                && (
-                    <FormControl
-                        fullWidth
-                        size="small"
-                        sx={{ width: '105px', mr: 1 }}
-                    >
-                        <InputLabel id="condition-label">Condition</InputLabel>
-                        <Select
-                            labelId="condition-label"
-                            id="condition"
-                            value={condition}
-                            label="Condition"
-                            onChange={handleConditionChange}
-                        >
-                            <MenuItem value="true">IS</MenuItem>
-                            <MenuItem value="false">IS NOT</MenuItem>
-                        </Select>
-                    </FormControl>
-                )
-            }
+        {/* Values (chips) */}
+        {needsValuesChips && (
+          <Box sx={{ minWidth: 220, flex: "1 1 300px" }}>
+            <Autocomplete
+              multiple
+              freeSolo
+              options={[]}
+              value={values}
+              onChange={handleValuesChange}
+              clearIcon={false}
+              fullWidth
+              size={CONTROL_SIZE}
+              sx={{ minWidth: 0, ...controlSx }}
+              renderTags={(value, getTagProps) =>
+                value.map((option: string, index: number) => (
+                  <Chip key={option} label={option} variant="outlined" {...getTagProps({ index })} />
+                ))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size={CONTROL_SIZE}
+                  label="Values"
+                  placeholder="Type and press Enter"
+                />
+              )}
+            />
+          </Box>
+        )}
 
-            {
-                (
-                    filterType === "title"
-                    ||
-                    filterType === "venue"
-                )
-                && (
-                    <FormControl
-                        fullWidth
-                        size="small"
-                        sx={{ width: '105px', mr: 1 }}
-                    >
-                        <InputLabel id="condition-label">Condition</InputLabel>
-                        <Select
-                            labelId="condition-label"
-                            id="condition"
-                            value={condition}
-                            label="Condition"
-                            onChange={handleConditionChange}
-                        >
-                            <MenuItem value="true">INCLUDES</MenuItem>
-                            <MenuItem value="false">EXCLUDES</MenuItem>
-                        </Select>
-                    </FormControl>
-                )
-            }
+        {/* Remove button */}
+        <Box sx={{ flex: "0 0 auto" }}>
+          <IconButton
+            aria-label="Remove filter"
+            size="small"
+            onClick={() => closeFilter(id)}
+            sx={{ width: 32, height: 32, borderRadius: "50%" }}
+          >
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
+        </Box>
 
-            {
-                (
-                    filterType === "publication_year"
-                    ||
-                    filterType === "author_full_name"
-                    ||
-                    filterType === "author_given_name"
-                    ||
-                    filterType === "author_family_name"
-                    ||
-                    filterType === "title"
-                    ||
-                    filterType === "venue"
-                    ||
-                    filterType === "doi"
-                )
-                && (
-                    <Autocomplete
-                        multiple
-                        freeSolo
-                        options={[]}
-                        value={values}
-                        onChange={handleValuesChange}
-                        clearIcon={false}
-                        fullWidth
-                        sx={{ width: '100%' }}
-                        renderTags={(value, getTagProps) =>
-                            value.map((option, index) => (
-                                <Chip
-                                    key={option}
-                                    label={option}
-                                    variant="outlined"
-                                    {...getTagProps({ index })}
-                                />
-                            ))
-                        }
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                size="small"
-                                label="Values"
-                                placeholder="Type and press Enter"
-                            />
-                        )}
-                    />
-                )
-            }
-
-            {
-                filterType === "publication_year_range"
-                && (
-                    <Box sx={{ width: '100%', mr: 1, ml: 1, alignContent: 'center'}}>
-                        <Slider
-                            value={sliderValues}
-                            onChange={handleValuesChange}
-                            valueLabelDisplay="auto"
-                            min={MIN}
-                            max={MAX}
-                            step={1}
-                        />
-                    </Box>
-                )
-            }
-
-            <IconButton
-                aria-label="Close Filter"
-                size="small"
-                sx={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%"
-                }}
-                onClick={() => closeFilter(id)}
-            >
-                <CloseIcon fontSize="inherit" />
-            </IconButton>
-        </div>
-    )
-}
+        {/* Year range slider (full width row) */}
+        {filterType === "publication_year_range" && (
+          <Box sx={{ flexBasis: "100%", mt: 0.5 }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Box sx={{ width: "100%", px: 1 }}>
+                <Slider
+                  value={sliderValues}
+                  onChange={handleValuesChange}
+                  valueLabelDisplay="auto"
+                  min={MIN}
+                  max={MAX}
+                  step={1}
+                />
+              </Box>
+            </Stack>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+};
 
 export default AdvancedFilter;

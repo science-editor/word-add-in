@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import Paper from "@mui/material/Paper";
 
 // Local
 import PaperMetaLine from "./PaperMetaLine";
@@ -18,7 +19,10 @@ function SearchResultsPanel( {foundPapers, handleClickReadPaper, handleClickZote
                     : paper.title;
 
                 return (
-                    <div className='paper-box' key={nanoid()}>
+                    <Paper
+                    elevation={0}
+                    sx={{ p: 2, border: (t) => `1px solid ${t.palette.divider}`, borderRadius: 1.5, mb: 2 }}
+                            >
                         <div>
                             {titleTooLong ? (
                                 <Tooltip
@@ -85,7 +89,7 @@ function SearchResultsPanel( {foundPapers, handleClickReadPaper, handleClickZote
                             </Tooltip>
                         </div>
 
-                    </div>
+                    </Paper>
                 );
             })}
         </>
