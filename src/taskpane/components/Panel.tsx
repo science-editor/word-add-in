@@ -13,6 +13,7 @@ import KeywordFilter from "./KeywordFilter";
 import { HeaderBar } from "./panel/HeaderBar";
 import { SemanticSearchInput } from "./panel/SemanticSearchInput";
 import { FiltersSection } from "./panel/FiltersSection";
+import Onboarding from "./Onboarding";
 
 import { useEndocApi } from "../hooks/useEndocApi";
 import { AdvancedFilterState, Paper } from "../types";
@@ -48,6 +49,8 @@ const SearchButton = ({
   );
 };
 
+const ONBOARDING_DISMISSED_KEY = "endoc.onboardingDismissed";
+
 const Panel = ({
   apiKey,
   handleApiKeyChange,
@@ -64,6 +67,15 @@ const Panel = ({
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState[]>([
     initialAdvancedFilter(),
   ]);
+
+  // Onboarding state
+  const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(ONBOARDING_DISMISSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
 
   // Data state
   const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
@@ -175,53 +187,75 @@ const Panel = ({
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [runSearch]);
 
+  // Onboarding visibility:
+  // Show if not dismissed OR no API key yet.
+  const showOnboarding = !onboardingDismissed || !apiKey?.trim();
+
+  const handleGetStarted = useCallback(() => {
+    try {
+      localStorage.setItem(ONBOARDING_DISMISSED_KEY, "1");
+    } catch { /* ignore */ }
+    setOnboardingDismissed(true);
+    setShowTutorialWindow(true); // jump directly to your existing setup dialog
+  }, []);
+
   return (
     <>
+      {/* Onboarding first-run screen */}
+      {showOnboarding ? (
+        <Onboarding onGetStarted={handleGetStarted} />
+      ) : (
+        <>
+          {/* Normal app UI */}
+          <div className="root">
+            <HeaderBar apiKey={apiKey} onOpenSettings={() => setShowTutorialWindow(true)} onQuickSearch={onQuickSearch} />
+
+            <div className="search-container">
+              <SemanticSearchInput
+                value={searchTerm}
+                onChange={(v) => setSearchTerm(v)}
+                invalid={invalidSemantic}
+                setTouched={setTouchedSemantic}
+              />
+
+              <KeywordFilter selectedKeywords={keywords} onKeywordsChange={setKeywords} />
+
+              <FiltersSection
+                filters={advancedFilters}
+                onAdd={onAddFilter}
+                onClose={onRemoveFilter}
+                onUpdate={onUpdateFilter}
+              />
+
+              <SearchButton
+                needsApiKey={!apiKey.trim()}
+                disabled={!apiKey.trim() || loadingBar || !searchTerm || invalidSemantic}
+                onClick={() => runSearch(searchTerm)}
+              />
+            </div>
+
+            {loadingBar && (
+              <Box sx={{ width: "100%", mt: "15px" }}>
+                <LinearProgress />
+              </Box>
+            )}
+
+            <SearchResultsPanel
+              foundPapers={foundPapers || []}
+              handleClickReadPaper={onReadPaper}
+              handleClickZoteroBtn={onAddToZotero}
+            />
+          </div>
+        </>
+      )}
+
+      {/* Shared modals */}
       <TutorialWindow
         showTutorialWindow={showTutorialWindow}
-        closeTutorialWindow={onCloseSettings}
+        closeTutorialWindow={() => setShowTutorialWindow(false)}
         apiKey={apiKey}
         handleApiKeyChange={handleApiKeyChange}
       />
-
-      <HeaderBar apiKey={apiKey} onOpenSettings={onOpenSettings} onQuickSearch={onQuickSearch} />
-
-      <div className="search-container">
-        <SemanticSearchInput
-          value={searchTerm}
-          onChange={(v) => setSearchTerm(v)}
-          invalid={invalidSemantic}
-          setTouched={setTouchedSemantic}
-        />
-
-        <KeywordFilter selectedKeywords={keywords} onKeywordsChange={setKeywords} />
-
-        <FiltersSection
-          filters={advancedFilters}
-          onAdd={onAddFilter}
-          onClose={onRemoveFilter}
-          onUpdate={onUpdateFilter}
-        />
-
-        <SearchButton
-          needsApiKey={!apiKey.trim()}
-          disabled={!apiKey.trim() || loadingBar || !searchTerm || invalidSemantic}
-          onClick={() => runSearch(searchTerm)}
-        />
-      </div>
-
-      {loadingBar && (
-        <Box sx={{ width: "100%", mt: "15px" }}>
-          <LinearProgress />
-        </Box>
-      )}
-
-      <SearchResultsPanel
-        foundPapers={foundPapers || []}
-        handleClickReadPaper={onReadPaper}
-        handleClickZoteroBtn={onAddToZotero}
-      />
-
       <PaperWindow
         expandedPaper={expandedPaper}
         setExpandedPaper={setExpandedPaper}
