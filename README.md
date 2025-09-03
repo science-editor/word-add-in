@@ -1,44 +1,143 @@
-# Host the Word add-in locally (for developers)
+# 📝 Endoc Word Add-In – Developer Guide
 
-### Requirements
+This repository contains the Word add-in frontend.  
+It runs locally during development with **webpack** on port `7000` and uses a secure **local HTTPS proxy** on port `3001` to forward API requests to the backend.
 
-+ Word installed on your machine.
-+ Node Version 18 or higher.
+---
 
-### Installation
+## ⚙️ Requirements
 
-1. Clone this repo.
-2. Run `npm install`
-3. Run `npm start`
-4. If this is the first time you launch the add-in on your machine, you will be prompted to allow the creation of Microsoft Office dev certificates on this computer. Simply allow and proceed with the instructions on screen.
-5. Now Word will automatically open with the Add-in loading in.
-6. Important: To make requests to backend through the local instance of the Word Add-in (Document search, Zotero etc.) you will need the proxy server running on your machine. Find the instructions [here](https://github.com/science-editor/word-add-in-proxy).
+- Microsoft **Word** (desktop app installed)  
+- **Node.js 18+** (v18 or higher, v20 also works)  
+- npm v9+ (ships with Node)  
+- Git  
+- macOS or Windows (Linux is not supported for Word desktop add-ins)
 
-### Troubleshoot
+---
 
-1. If you see the message "Sorry we could not load your Add-in." or similar one in your taskpane, restart the dev server with:
+## 🚀 Setup (First Time)
 
-   → `npm restart`
+1. **Clone this repo**
+   ```bash
+   git clone https://github.com/science-editor/word-add-in.git
+   cd word-add-in
+   ```
 
-2. If Word doesn't launch at all, go to your browser and enter https://localhost:7000/taskpane.html. If the Add-in appears here, reinstall Word and try again.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### Production Server
+3. **Install Office dev certificates** (only needed once per machine)
+   ```bash
+   npx office-addin-dev-certs install
+   ```
+   - On macOS: open **Keychain Access → Certificates → localhost**, set it to **Always Trust**.
+   - On Windows: accept the certificate prompt.  
+   ✅ Without this step, Word will reject `https://localhost` and the add-in won’t load.
 
-1. To create a production build, use `npm run build`. Generally, you never have to do this manually, as this is done in the Dockerfile, which is executed by the Github Actions in the orchestration repo.
+4. **Run the local proxy** (separate repo)
+   - Clone & run [word-add-in-proxy](https://github.com/science-editor/word-add-in-proxy):
+     ```bash
+     git clone https://github.com/science-editor/word-add-in-proxy.git
+     cd word-add-in-proxy
+     npm install
+     node server.mjs
+     ```
+   - You should see:
+     ```
+     ✅ Secure Proxy running:
+        UI origin      : https://localhost:7000
+        Proxy endpoint : https://localhost:3001/proxy
+        Target GraphQL : https://endoc.ethz.ch/graphql
+     ```
 
+5. **Start the dev server + sideload Word**
+   From this repo’s root:
+   ```bash
+   npm start
+   ```
+   This will:
+   - Start webpack on <https://localhost:7000>
+   - Launch Word
+   - Auto-sideload the add-in using `manifest.xml`
 
-# Sideload into office on the web (for testers)
+6. **Confirm it works**
+   - Open <https://localhost:7000/taskpane.html> in your browser  
+     → You should see the taskpane app (React UI).
+   - Open Word: the add-in should appear in the taskpane.
 
-1. Download the [manifest.prod.xml](https://github.com/science-editor/word-add-in/blob/main/manifest.prod.xml)
+---
 
-2. Open [Office on the web](https://m365.cloud.microsoft/). Open a document in Word
+## 🔑 API Key Setup
 
-3. Navigate to "Home" > "..." > "Add-ins" > "Advanced..."
+- Open the add-in pane in Word.  
+- Paste your API key into the input field (stored in localStorage).  
+- All queries will now go through the proxy → backend.
 
-4. In the Office Add-ins dialog, select Upload My Add-in
+---
 
-5. Browse to the add-in manifest file you downloaded in step 1, and then select "Upload"
+## 🛠️ Troubleshooting
 
-![img.png](assets/add-in-upload-window.png)
+### ❌ “Sorry we can’t load the add-in”
+- Run:
+  ```bash
+  npm run stop
+  npm start
+  ```
+- Then open: <https://localhost:7000/taskpane.html>  
+  If this loads in browser but not in Word, **Word isn’t trusting the dev cert** → re-run:
+  ```bash
+  npx office-addin-dev-certs install
+  ```
 
-6. Wait for a couple of moments until the add-in has finished loading
+### ❌ `EADDRINUSE: address already in use`
+- Something else is already running on port 7000 or 3001.  
+- Kill existing processes:
+  ```bash
+  lsof -nP -iTCP:7000 -sTCP:LISTEN
+  kill -9 <PID>
+  lsof -nP -iTCP:3001 -sTCP:LISTEN
+  kill -9 <PID>
+  ```
+- Restart `npm start`.
+
+### ❌ Network errors in the add-in
+- Check proxy logs (the `node server.mjs` terminal):  
+  - You should see `➡️ POST /proxy` and `⬅️ 200 OK`.  
+  - If it shows `500` or `502`, copy the logged response and investigate backend config.
+
+### ❌ Debugging inside Word without Safari inspector
+- Use **console logging** in your React code:
+  ```ts
+  console.info("[Endoc/Apollo]", { url: GRAPHQL_URL, operationName });
+  ```
+- Logs appear in the dev server terminal (if using HMR) or proxy terminal.
+
+---
+
+## 🌍 Production Build
+
+To bundle for deployment:
+```bash
+npm run build
+```
+
+This generates a `/dist` folder.  
+In production, the add-in is served at <https://endoc.ethz.ch/word-add-in/taskpane.html> via Nginx/Docker.  
+
+The production manifest is [`manifest.prod.xml`](manifest.prod.xml).
+
+---
+
+## 🌐 Sideload in Office on the Web
+
+1. Download [`manifest.prod.xml`](https://github.com/science-editor/word-add-in/blob/main/manifest.prod.xml)  
+2. Open [Office on the web](https://m365.cloud.microsoft/) → Word document  
+3. Go to **Home > … > Add-ins > Advanced… > Upload My Add-in**  
+4. Select the manifest file  
+5. The add-in loads in the taskpane
+
+---
+
+✨ You’re now ready to develop and test the Endoc Word Add-In locally.
