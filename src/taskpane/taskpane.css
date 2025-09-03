@@ -1,222 +1,267 @@
 /*
- * Endoc Word Add‑in styles (modernized)
- * - Keeps existing color scheme (primary #3b82f6 / hover #2563eb)
- * - Introduces CSS variables, consistent spacing, shadows, and focus states
- * - Light touch enhancements only (no breaking class name changes)
+ * Endoc Word Add-in — clean shell + full-width custom tabs
+ * Works with: src/taskpane/components/shell/TabbedShell.tsx (custom buttons)
  */
 
-/* --------------------------------------------------
-   Design tokens
--------------------------------------------------- */
-:root {
+/* ---------- host reset: fill the WebView, no surprises ---------- */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  background: transparent !important; /* Word paints outside */
+}
+#container {
+  position: fixed;       /* fill the pane, ignore host padding */
+  inset: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  overflow: hidden;      /* one scrollbar max */
+}
+
+/* ---------- design tokens ---------- */
+:root{
   /* colors */
-  --color-bg: #ffffff;
-  --color-surface: #ffffff;
-  --color-text: #0f172a; /* slate-900 */
-  --color-muted: #475569; /* slate-600 */
-  --color-border: #e5e7eb; /* gray-200 */
-  --color-divider: #e2e8f0; /* slate-200 */
-  --color-primary: #3b82f6; /* blue-500 (unchanged) */
-  --color-primary-hover: #2563eb; /* blue-600 (unchanged) */
-  --color-primary-ring: rgba(59, 130, 246, 0.35);
-  --color-danger: #f43f5e; /* rose-500 */
+  --color-bg:#ffffff;
+  --color-surface:#ffffff;
+  --color-text:#0f172a;         /* slate-900 */
+  --color-muted:#475569;        /* slate-600 */
+  --color-border:#e5e7eb;       /* gray-200 */
+  --color-divider:#e2e8f0;      /* slate-200 */
+  --color-primary:#3b82f6;      /* blue-500 */
+  --color-primary-600:#2563eb;  /* blue-600 */
+  --color-primary-ring:rgba(59,130,246,.35);
 
-  /* radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
+  /* radius */
+  --radius-sm:6px; --radius-md:10px; --radius-lg:12px;
 
-  /* spacing scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
+  /* spacing */
+  --space-1:4px; --space-2:8px; --space-3:12px;
+  --space-4:16px; --space-5:20px; --space-6:24px;
 
   /* elevation */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
 
-  /* typography */
-  --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
-  --font-size-base: 14px;
-  --font-size-lg: 16px;
-  --font-weight-regular: 400;
-  --font-weight-medium: 600;
-  --font-weight-bold: 700;
+  /* type */
+  --font-body:'Inter','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --font-size-base:14px;
+  --font-size-lg:16px;
 
   /* motion */
-  --transition-fast: 150ms ease;
-  --transition-med: 220ms ease;
+  --ease-fast:150ms ease;
+  --ease-med:220ms ease;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-/* --------------------------------------------------
-   Base
--------------------------------------------------- */
-.root {
-  min-height: 100vh;
-  padding: var(--space-5);
+/* ---------- app frame ---------- */
+.root{
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  background: var(--color-bg);
+  border-radius: 0; box-shadow: none;
+  overflow: hidden;
   font-family: var(--font-body);
   font-size: var(--font-size-base);
-  color: var(--color-text);
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+}
+p{ font-family: var(--font-body); }
+
+.divider{
+  height:1px; background:var(--color-divider);
+  border:0; margin:var(--space-4) 0;
 }
 
-p { font-family: var(--font-body); }
-
-.divider {
-  height: 1px;
-  background-color: var(--color-divider);
-  border: none;
-  margin: var(--space-4) 0;
-}
-
-/* Improve default focus outlines for keyboard users */
-:where(button, a, [role="button"], input, select, textarea):focus-visible {
+/* keyboard focus */
+:where(button,a,[role="button"],input,select,textarea):focus-visible{
   outline: 3px solid var(--color-primary-ring);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  outline-offset: 2px; border-radius: var(--radius-sm);
 }
 
-/* Reduce motion if the user prefers */
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *{ transition:none !important; animation:none !important; }
+}
+
+/* ==================================================
+   SHELL (tabs + content)
+   ================================================== */
+.shell{
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;                 /* content scrolls, bar fixed */
+  background: var(--color-bg);
+}
+
+/* full-bleed sticky tab bar */
+.shell__tabbar{
+  position: sticky; top: 0; z-index: 2;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* content area (single scroll region) */
+.shell__content{
+  flex: 1 1 auto;
+  min-height: 0;         /* allows child scrollers */
+  overflow: auto;
+  padding: var(--space-5);
+  background: var(--color-bg);
+}
+
+/* ==================================================
+   CUSTOM TABS (no Fluent jitter)
+   markup: <nav class="tabs"> <button class="tab">…</button> … </nav>
+   ================================================== */
+.tabs{
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 44px;                /* stable bar height */
+  margin: 0; padding: 0;
+  background: var(--color-surface);
+  border: 0;
+  user-select: none;
+}
+
+/* each tab = equal width, centered label */
+.tab{
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  position: relative;
+  margin: 0; border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  font: inherit;
+  font-weight: 600;             /* same in both states → no jump */
+  color: var(--color-text);
+
+  padding: 0 12px;              /* click target */
+  transition: background var(--ease-fast), color var(--ease-fast), transform var(--ease-fast);
+}
+
+/* hover ripple-y fill */
+.tab:hover{
+  background: rgba(0,0,0,.035);
+}
+.tab:active{
+  transform: translateY(1px);
+}
+
+/* active indicator (fills full button width) */
+.tab.is-active{
+  color: var(--color-primary);
+}
+.tab.is-active::after{
+  content:"";
+  position:absolute; left:0; right:0; bottom:0;
+  height: 2px;
+  background: var(--color-primary);
+}
+
+/* keep label perfectly centered if inner wrappers appear */
+.tab > *{
+  display: inline-flex; align-items: center; justify-content: center;
 }
 
 /* --------------------------------------------------
-   Search container
+   Dark theme for tabs
 -------------------------------------------------- */
-.search-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+@media (prefers-color-scheme: dark){
+  .tabs{ background: var(--color-surface); }
+  .tab:hover{ background: rgba(255,255,255,.06); }
+}
+
+/* ==================================================
+   SEARCH + BUTTONS
+   ================================================== */
+.search-container{
+  display: flex; flex-direction: column; gap: var(--space-4);
   margin-top: var(--space-6);
 }
 
-.search-btn {
+.search-btn{
   font-family: var(--font-body);
-  background-color: var(--color-primary);
-  width: 100%;
-  color: #fff;
-  padding: 12px var(--space-4);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-regular);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  background: var(--color-primary); color:#fff; width:100%;
+  padding:12px var(--space-4); font-size:var(--font-size-lg);
+  border:0; border-radius: var(--radius-md);
+  cursor:pointer;
+  transition: background var(--ease-fast), box-shadow var(--ease-fast), transform var(--ease-fast);
   box-shadow: var(--shadow-sm);
 }
+.search-btn:hover{ background: var(--color-primary-600); }
+.search-btn:active{ transform: translateY(1px); }
+.search-btn:focus-visible{ box-shadow: 0 0 0 4px var(--color-primary-ring); }
+.search-btn:disabled{ background:#a8a8a8; box-shadow:none; cursor:default; }
 
-.search-btn:hover { background-color: var(--color-primary-hover); }
-
-.search-btn:active { transform: translateY(1px); }
-
-.search-btn:focus-visible { box-shadow: 0 0 0 4px var(--color-primary-ring); }
-
-.search-btn:disabled {
-  background-color: #a8a8a8;
-  cursor: default;
-  box-shadow: none;
+/* ==================================================
+   RESULT CARDS
+   ================================================== */
+.paper-box{
+  display:grid; grid-template-columns:1fr auto; align-items:start; gap:var(--space-4);
+  margin-top:var(--space-5); padding:var(--space-4);
+  border:1px solid var(--color-border); border-radius: var(--radius-md);
+  background: var(--color-surface); box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--ease-med), border-color var(--ease-fast);
 }
+.paper-box:hover{ box-shadow: var(--shadow-md); border-color:#d1d5db; }
 
-/* --------------------------------------------------
-   Papers list / cards
--------------------------------------------------- */
-.paper-box {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  gap: var(--space-4);
-  margin-top: var(--space-5);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-med), transform var(--transition-med), border-color var(--transition-fast);
+.paper-box h3{
+  margin:0 0 var(--space-2) 0; font-size:15px; line-height:1.35;
+  font-weight:700; color: var(--color-text);
 }
+.paper-box p, .paper-box span{ color: var(--color-muted); }
 
-.paper-box:hover {
-  box-shadow: var(--shadow-md);
-  border-color: #d1d5db; /* gray-300 */
-}
-
-.paper-box h3 {
-  margin: 0 0 var(--space-2) 0;
-  font-size: 15px;
-  line-height: 1.35;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-}
-
-.paper-box p, .paper-box span {
-  color: var(--color-muted);
-}
-
-.paper-box-buttons-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+.paper-box-buttons-container{
+  display:flex; flex-direction:column; gap:var(--space-2);
   margin-left: var(--space-4);
 }
-
-/* Ensure icon buttons look crisp on light backgrounds */
-.paper-box-buttons-container .MuiIconButton-root {
-  border-radius: 50%;
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+.paper-box-buttons-container .MuiIconButton-root{
+  border-radius:50%; transition: background var(--ease-fast);
+}
+.paper-box-buttons-container .MuiIconButton-root:hover{
+  background: rgba(15,23,42,.04);
 }
 
-.paper-box-buttons-container .MuiIconButton-root:hover {
-  background-color: rgba(15, 23, 42, 0.04); /* slate-900 @ 4% */
+/* ==================================================
+   ATTENTION PULSE (unchanged)
+   ================================================== */
+@keyframes attention-pulse{
+  0%{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+  100%{ transform:translate(-50%,-50%) scale(1.5); opacity:0; }
+}
+.attention-pulse{ position:relative; display:inline-flex; }
+.attention-pulse::after{
+  content:""; position:absolute; top:50%; left:50%; width:100%; height:100%;
+  border:2px solid rgba(244,67,54,.7); border-radius:50%; pointer-events:none;
+  transform:translate(-50%,-50%) scale(1); opacity:0; animation:attention-pulse 2s ease-out infinite;
 }
 
-/* --------------------------------------------------
-   Attention pulse
--------------------------------------------------- */
-@keyframes attention-pulse {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
-}
-
-.attention-pulse { position: relative; display: inline-flex; }
-
-.attention-pulse::after {
-  content: "";
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 100%;
-  height: 100%;
-  border: 2px solid rgba(244, 67, 54, 0.7); /* keep original accent */
-  border-radius: 50%;
-  pointer-events: none;
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 0;
-  animation: attention-pulse 2s ease-out infinite;
-}
-
-/* --------------------------------------------------
-   Optional dark-mode polish (keeps primary colors)
--------------------------------------------------- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0b1220;          /* near-slate dark */
-    --color-surface: #0f172a;     /* slate-900 */
-    --color-text: #e5e7eb;        /* gray-200 */
-    --color-muted: #cbd5e1;       /* slate-300 */
-    --color-border: #1f2a44;      /* darker divider */
-    --color-divider: #1f2a44;
-    --color-primary-ring: rgba(59, 130, 246, 0.45);
+/* ==================================================
+   DARK MODE (global)
+   ================================================== */
+@media (prefers-color-scheme: dark){
+  :root{
+    --color-bg:#0b1220;
+    --color-surface:#0f172a;
+    --color-text:#e5e7eb;
+    --color-muted:#cbd5e1;
+    --color-border:#1f2a44;
+    --color-divider:#1f2a44;
+    --color-primary-ring:rgba(59,130,246,.45);
   }
 
-  .root { box-shadow: none; }
-  .paper-box { border-color: var(--color-border); }
-  .paper-box:hover { border-color: #334155; }
-  .paper-box-buttons-container .MuiIconButton-root:hover { background-color: rgba(148, 163, 184, 0.12); }
+  .paper-box{ border-color: var(--color-border); }
+  .paper-box:hover{ border-color:#334155; }
+  .paper-box-buttons-container .MuiIconButton-root:hover{
+    background: rgba(148,163,184,.12);
+  }
 }

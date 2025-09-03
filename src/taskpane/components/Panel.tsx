@@ -1,78 +1,40 @@
 import * as React from "react";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import Box from "@mui/material/Box";
-import LinearProgress from "@mui/material/LinearProgress";
-import Tooltip from "@mui/material/Tooltip";
 import { toast } from "react-toastify";
 
-import TutorialWindow from "./TutotrialWindow";
-import PaperWindow from "./PaperWindow";
-import SearchResultsPanel from "./SearchResultsPanel";
-import KeywordFilter from "./KeywordFilter";
-
-import { HeaderBar } from "./panel/HeaderBar";
-import { SemanticSearchInput } from "./panel/SemanticSearchInput";
-import { FiltersSection } from "./panel/FiltersSection";
+import Box from "@mui/material/Box";
+import { TabbedShell, TabKey } from "./shell/TabbedShell";
 import Onboarding from "./Onboarding";
+import { DiscoverScreen } from "./discover/DiscoverScreen";
+import { SettingsScreen } from "./settings/SettingsScreen";
+import PaperWindow from "./PaperWindow";
 
 import { useEndocApi } from "../hooks/useEndocApi";
 import { AdvancedFilterState, Paper } from "../types";
 import { initialAdvancedFilter } from "../utils/filters";
 
+/** Match App.tsx logic for GraphQL URL */
+const isLocalDev =
+  typeof window !== "undefined" && /^https:\/\/localhost:\d+$/i.test(window.location.origin);
+const GRAPHQL_URL = isLocalDev
+  ? "https://localhost:3001/proxy"
+  : "https://endoc.ethz.ch/graphql";
+
 const ONBOARDING_DISMISSED_KEY = "endoc.onboardingDismissed";
 
-/* ------------------------------ UI bits ------------------------------ */
-
-const SearchButton = ({
-  disabled,
-  onClick,
-  needsApiKey,
-  label = "Search",
-}: {
-  disabled: boolean;
-  onClick: () => void;
-  needsApiKey: boolean;
-  label?: string;
-}) => {
-  if (needsApiKey) {
-    return (
-      <Tooltip
-        title={"Add a valid Endoc API Key in the settings section before performing searches."}
-        componentsProps={{ tooltip: { sx: { fontSize: "1.2rem", lineHeight: 1.4 } } }}
-      >
-        <button className="search-btn" onClick={onClick} disabled>
-          {label}
-        </button>
-      </Tooltip>
-    );
-  }
-  return (
-    <button className="search-btn" onClick={onClick} disabled={disabled}>
-      {label}
-    </button>
-  );
-};
-
-/* ------------------------------ Panel ------------------------------ */
-
-const Panel = ({
+export default function Panel({
   apiKey,
   handleApiKeyChange,
 }: {
   apiKey: string;
   handleApiKeyChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}) => {
+}) {
   const { search, loadPaperContent, addToZotero } = useEndocApi();
 
-  // UI state
-  const [showTutorialWindow, setShowTutorialWindow] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [keywords, setKeywords] = useState<string[]>([]);
-  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState[]>([
-    initialAdvancedFilter(),
-  ]);
+  // NAV
+  const [tab, setTab] = useState<TabKey>("discover");
 
-  // Onboarding state: shown only on very first run, not tied to API key anymore.
+  // Onboarding
   const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => {
     try {
       return localStorage.getItem(ONBOARDING_DISMISSED_KEY) === "1";
@@ -80,13 +42,27 @@ const Panel = ({
       return false;
     }
   });
+  const showOnboarding = !onboardingDismissed && !apiKey?.trim();
 
-  // Data state
+  const dismissOnboarding = useCallback(() => {
+    try {
+      localStorage.setItem(ONBOARDING_DISMISSED_KEY, "1");
+    } catch {}
+    setOnboardingDismissed(true);
+    setTab("settings"); // guide straight to Settings
+  }, []);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState[]>([
+    initialAdvancedFilter(),
+  ]);
   const [foundPapers, setFoundPapers] = useState<Paper[] | null>(null);
+  const [loading, setLoading] = useState(false);
   const [expandedPaper, setExpandedPaper] = useState<Paper | null>(null);
-  const [loadingBar, setLoadingBar] = useState(false);
 
-  // Derived validity for the semantic input
+  // Semantic input validity
   const wordCount = useMemo(
     () => searchTerm.trim().split(/\s+/).filter(Boolean).length,
     [searchTerm]
@@ -94,185 +70,169 @@ const Panel = ({
   const [touchedSemantic, setTouchedSemantic] = useState(false);
   const invalidSemantic = touchedSemantic && wordCount > 0 && wordCount < 5;
 
-  // Events
-  const onOpenSettings = useCallback(() => setShowTutorialWindow(true), []);
-  const onCloseSettings = useCallback(
-    /* accept reason if you wired it from TutorialWindow; we don’t need it here */
-    (_reason?: "backdropClick" | "escapeKeyDown" | "iconButton" | "programmatic") => {
-      setShowTutorialWindow(false);
-      // NOTE: do NOT toggle onboarding here; onboarding is controlled only by Get Started.
+  // Filter handlers
+  const onAddFilter = useCallback(() => {
+    setAdvancedFilters((prev) => [...prev, initialAdvancedFilter()]);
+  }, []);
+  const onRemoveFilter = useCallback((id: string) => {
+    setAdvancedFilters((prev) => prev.filter((f) => f.id !== id));
+  }, []);
+  const onUpdateFilter = useCallback(
+    (id: string, key: keyof AdvancedFilterState, val: any) => {
+      setAdvancedFilters((prev) => prev.map((f) => (f.id === id ? { ...f, [key]: val } : f)));
     },
     []
   );
 
-  const onAddFilter = useCallback(
-    () => setAdvancedFilters((prev) => [...prev, initialAdvancedFilter()]),
-    []
-  );
-  const onRemoveFilter = useCallback(
-    (id: string) => setAdvancedFilters((prev) => prev.filter((f) => f.id !== id)),
-    []
-  );
-  const onUpdateFilter = useCallback(
-    (id: string, key: keyof AdvancedFilterState, val: any) =>
-      setAdvancedFilters((prev) => prev.map((f) => (f.id === id ? { ...f, [key]: val } : f))),
-    []
-  );
-
-  const runSearch = useCallback(
+  // Run search
+  const onRunSearch = useCallback(
     async (term: string) => {
+      setFoundPapers(null);
+      setLoading(true);
       try {
-        setFoundPapers(null);
-        setLoadingBar(true);
         const papers = await search(term, keywords, advancedFilters);
         setFoundPapers(papers);
       } catch (err: any) {
-        console.error("GraphQL Error:", err);
-        toast.error(err?.message || "Failed to retrieve papers.", {
-          icon: <span role="img" aria-label="warning">⚠️</span>,
-        });
+        console.error(err);
+        toast.error(err?.message || "Failed to retrieve papers.");
       } finally {
-        setLoadingBar(false);
+        setLoading(false);
       }
     },
     [search, keywords, advancedFilters]
   );
 
-  const onQuickSearch = useCallback(
-    (docText: string) => {
-      setSearchTerm(docText);
-      runSearch(docText);
-    },
-    [runSearch]
-  );
-
+  // Read paper
   const onReadPaper = useCallback(
     async (paper: Paper) => {
       try {
         const enriched = await loadPaperContent(paper);
         setExpandedPaper(enriched);
-      } catch (err: any) {
-        console.error("Error loading paper content:", err);
-        toast.error("Failed to load paper content.", {
-          icon: <span role="img" aria-label="warning">⚠️</span>,
-        });
+      } catch {
+        toast.error("Failed to load paper content.");
       }
     },
     [loadPaperContent]
   );
 
+  // Zotero
   const onAddToZotero = useCallback(
     async (paper: Paper) => {
       try {
         const result = await addToZotero(paper);
         if (result?.status === "success") {
-          toast.success("Paper succesfully added to your Zotero Library.", {
-            icon: <span role="img" aria-label="warning">✅️</span>,
-          });
+          toast.success("Added to Zotero.");
         } else {
-          toast.error(
-            "Paper could not be added because your Zotero Account ist not connected to your Endoc Account.",
-            { icon: <span role="img" aria-label="warning">⚠️</span> }
-          );
+          toast.error("Zotero not connected in Endoc account.");
         }
       } catch {
-        toast.error("Failed to add paper to Zotero.", {
-          icon: <span role="img" aria-label="warning">⚠️</span>,
-        });
+        toast.error("Failed to add to Zotero.");
       }
     },
     [addToZotero]
   );
 
-  // Pull-to-search via localStorage bridge
+  // Validate key (only from Settings)
+  const [checkBusy, setCheckBusy] = useState(false);
+  const [keyProblem, setKeyProblem] = useState<string | null>(null);
+
+  const validateKey = useCallback(async () => {
+    if (!apiKey?.trim()) {
+      setKeyProblem("API key is required.");
+      return;
+    }
+    setCheckBusy(true);
+    setKeyProblem(null);
+    try {
+      const res = await fetch(GRAPHQL_URL, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": apiKey,
+        },
+        body: JSON.stringify({ query: "query { __typename }" }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+      }
+      toast.success("Endoc connected.");
+    } catch (e: any) {
+      console.error("Key validation failed:", e);
+      setKeyProblem(e?.message || "Validation failed.");
+    } finally {
+      setCheckBusy(false);
+    }
+  }, [apiKey]);
+
+  // Storage bridge remains
   useEffect(() => {
     const handleStorageChange = () => {
       const newSearchTerm = localStorage.getItem("searchTerm") || "";
       if (newSearchTerm) {
         setSearchTerm(newSearchTerm);
         localStorage.removeItem("searchTerm");
-        runSearch(newSearchTerm);
+        onRunSearch(newSearchTerm);
       }
     };
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-  }, [runSearch]);
+  }, [onRunSearch]);
 
-  /* ----------------------- Onboarding visibility -----------------------
-     Show onboarding only until the user presses “Get started” once.
-     Do NOT tie it to API key presence anymore to avoid the loop.
-  ---------------------------------------------------------------------- */
-  const showOnboarding = !onboardingDismissed;
+  // Onboarding first
+  if (showOnboarding) {
+    return <Onboarding onGetStarted={dismissOnboarding} />;
+  }
 
-  const handleGetStarted = useCallback(() => {
-    try {
-      localStorage.setItem(ONBOARDING_DISMISSED_KEY, "1");
-    } catch { /* ignore */ }
-    setOnboardingDismissed(true);
-    setShowTutorialWindow(true); // jump to setup dialog
-  }, []);
+  const apiKeyPresent = !!apiKey?.trim();
 
   return (
     <>
-      {/* Onboarding first-run screen */}
-      {showOnboarding ? (
-        <Onboarding onGetStarted={handleGetStarted} />
-      ) : (
-        <>
-          {/* Normal app UI */}
-          <div className="root">
-            <HeaderBar
-              apiKey={apiKey}
-              onOpenSettings={onOpenSettings}
-              onQuickSearch={onQuickSearch}
-            />
+      <TabbedShell value={tab} onChange={setTab}>
+        {tab === "discover" && (
+          <DiscoverScreen
+            apiKeyPresent={apiKeyPresent}
+            goToSettings={() => setTab("settings")}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            invalidSemantic={invalidSemantic}
+            setTouched={setTouchedSemantic}
+            keywords={keywords}
+            setKeywords={setKeywords}
+            advancedFilters={advancedFilters}
+            onAddFilter={onAddFilter}
+            onRemoveFilter={onRemoveFilter}
+            onUpdateFilter={onUpdateFilter}
+            onRunSearch={onRunSearch}
+            loading={loading}
+            results={foundPapers}
+            onReadPaper={onReadPaper}
+            onAddToZotero={onAddToZotero}
+          />
+        )}
 
-            <div className="search-container">
-              <SemanticSearchInput
-                value={searchTerm}
-                onChange={(v) => setSearchTerm(v)}
-                invalid={invalidSemantic}
-                setTouched={setTouchedSemantic}
-              />
+        {tab === "library" && (
+          // Placeholder for now
+          <Box sx={{ p: 2, color: "text.secondary" }}>
+            Library coming soon.
+          </Box>
+        )}
 
-              <KeywordFilter selectedKeywords={keywords} onKeywordsChange={setKeywords} />
+        {tab === "settings" && (
+          <SettingsScreen
+            apiKey={apiKey}
+            setApiKey={(v) => handleApiKeyChange({ target: { value: v } } as any)}
+            onValidate={validateKey}
+            busy={checkBusy}
+            problem={keyProblem}
+            onResetOnboarding={() => {
+              localStorage.removeItem(ONBOARDING_DISMISSED_KEY);
+              toast.info("Onboarding will show next time you open the add-in.");
+            }}
+          />
+        )}
+      </TabbedShell>
 
-              <FiltersSection
-                filters={advancedFilters}
-                onAdd={onAddFilter}
-                onClose={onRemoveFilter}
-                onUpdate={onUpdateFilter}
-              />
-
-              <SearchButton
-                needsApiKey={!apiKey.trim()}
-                disabled={!apiKey.trim() || loadingBar || !searchTerm || invalidSemantic}
-                onClick={() => runSearch(searchTerm)}
-              />
-            </div>
-
-            {loadingBar && (
-              <Box sx={{ width: "100%", mt: "15px" }}>
-                <LinearProgress />
-              </Box>
-            )}
-
-            <SearchResultsPanel
-              foundPapers={foundPapers || []}
-              handleClickReadPaper={onReadPaper}
-              handleClickZoteroBtn={onAddToZotero}
-            />
-          </div>
-        </>
-      )}
-
-      {/* Shared modals */}
-      <TutorialWindow
-        showTutorialWindow={showTutorialWindow}
-        closeTutorialWindow={onCloseSettings}
-        apiKey={apiKey}
-        handleApiKeyChange={handleApiKeyChange}
-      />
       <PaperWindow
         expandedPaper={expandedPaper}
         setExpandedPaper={setExpandedPaper}
@@ -280,6 +240,4 @@ const Panel = ({
       />
     </>
   );
-};
-
-export default Panel;
+}

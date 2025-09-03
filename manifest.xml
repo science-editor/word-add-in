@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<OfficeApp
-  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
-  xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
-  xsi:type="TaskPaneApp">
-
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+           xsi:type="TaskPaneApp">
   <Id>4739026b-536f-440e-80df-76a4c66e6ad4</Id>
-  <Version>1.0.1.1</Version>
+  <Version>1.0.0.0</Version>
   <ProviderName>Endoc</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Endoc"/>
   <Description DefaultValue="Get started with the Endoc Word Add-In"/>
 
-  <!-- Top-level icons (dev) -->
+  <!-- Top-level icons (must be HTTPS URLs, not file paths) -->
   <IconUrl DefaultValue="https://localhost:7070/assets/endoc-logo-32x32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:7070/assets/endoc-logo-80x80.png"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:7070/assets/endoc-logo-64x64.png"/>
 
   <SupportUrl DefaultValue="https://endoc.ethz.ch/contact"/>
 
   <AppDomains>
-    <AppDomain>https://localhost:7070</AppDomain>
+    <!-- Allow calls/iframes to your local dev origin -->
     <AppDomain>https://localhost:7070</AppDomain>
   </AppDomains>
 
@@ -40,18 +38,13 @@
 
   <Permissions>ReadWriteDocument</Permissions>
 
-  <VersionOverrides
-    xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
-    xsi:type="VersionOverridesV1_0">
-
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+                    xsi:type="VersionOverridesV1_0">
     <Hosts>
       <Host xsi:type="Document">
         <Runtimes>
-          <!-- With SharedRuntime it's fine to use Taskpane as the function file host;
-               if you prefer to split, change to resid="Commands.Url" and ensure commands.html exists -->
           <Runtime resid="Taskpane.Url" lifetime="long"/>
         </Runtimes>
-
         <DesktopFormFactor>
           <GetStarted>
             <Title resid="GetStarted.Title"/>
@@ -90,14 +83,14 @@
             </OfficeTab>
           </ExtensionPoint>
 
-          <!-- Context Menu (optional) -->
+          <!-- Context Menu (kept as-is) -->
           <ExtensionPoint xsi:type="ContextMenu">
             <OfficeMenu id="ContextMenuText">
               <Control xsi:type="Menu" id="TestMenu2">
-                <Label resid="residLabel" />
+                <Label resid="residLabel"/>
                 <Supertip>
-                  <Title resid="residLabel" />
-                  <Description resid="residToolTip" />
+                  <Title resid="residLabel"/>
+                  <Description resid="residToolTip"/>
                 </Supertip>
                 <Icon>
                   <bt:Image size="16" resid="Icon.16x16"/>
@@ -108,8 +101,8 @@
                   <Item id="showGallery2">
                     <Label resid="residLabel2"/>
                     <Supertip>
-                      <Title resid="residLabel2" />
-                      <Description resid="residToolTip" />
+                      <Title resid="residLabel2"/>
+                      <Description resid="residToolTip"/>
                     </Supertip>
                     <Icon>
                       <bt:Image size="16" resid="Icon.16x16"/>
@@ -124,6 +117,7 @@
               </Control>
             </OfficeMenu>
           </ExtensionPoint>
+
         </DesktopFormFactor>
       </Host>
     </Hosts>
@@ -137,8 +131,7 @@
 
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://endoc.ethz.ch/"/>
-        <bt:Url id="Taskpane.Url"   DefaultValue="https://localhost:7070/taskpane.html"/>
-        <bt:Url id="Commands.Url"   DefaultValue="https://localhost:7070/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:7070/taskpane.html"/>
       </bt:Urls>
 
       <bt:ShortStrings>
