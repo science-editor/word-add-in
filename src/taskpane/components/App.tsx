@@ -15,17 +15,15 @@ import { toast } from "react-toastify";
 // Local
 import "../taskpane.css";
 import Panel from "./Panel";
+import Onboarding from "./Onboarding";
 
 /**
  * Decide endpoint by the actual origin at runtime.
  * If we're running from https://localhost:<port>, use the local proxy.
  * Otherwise (prod build hosted on your domain), use the prod GraphQL.
  */
-// src/taskpane/components/App.tsx (top of file)
-
 const isLocalDev =
-  typeof window !== "undefined" &&
-  /^https:\/\/localhost:\d+$/i.test(window.location.origin);
+  typeof window !== "undefined" && /^https:\/\/localhost:\d+$/i.test(window.location.origin);
 
 const GRAPHQL_URL = isLocalDev
   ? "https://localhost:3001/proxy"
@@ -33,26 +31,33 @@ const GRAPHQL_URL = isLocalDev
 
 /** Very loud console logger for link chain (dev only) */
 const debugLink = new ApolloLink((operation, forward) => {
-  // Minimal safe logging (no query printing to avoid noise)
-  console.info(
-    "[Endoc/Apollo] Request:",
-    JSON.stringify({
-      url: GRAPHQL_URL,
-      operationName: operation.operationName,
-      hasApiKey: !!operation.getContext()?.headers?.["x-api-key"],
-    })
-  );
-  const t0 = performance.now();
-  return forward(operation).map((response) => {
-    const t1 = performance.now();
+  try {
     console.info(
-      "[Endoc/Apollo] Response:",
+      "[Endoc/Apollo] Request:",
       JSON.stringify({
+        url: GRAPHQL_URL,
         operationName: operation.operationName,
-        durationMs: Math.round(t1 - t0),
-        hasErrors: !!(response as any)?.errors?.length,
+        hasApiKey: !!operation.getContext()?.headers?.["x-api-key"],
       })
     );
+  } catch {
+    // no-op
+  }
+  const t0 = (typeof performance !== "undefined" && performance.now()) || Date.now();
+  return forward(operation).map((response) => {
+    const t1 = (typeof performance !== "undefined" && performance.now()) || Date.now();
+    try {
+      console.info(
+        "[Endoc/Apollo] Response:",
+        JSON.stringify({
+          operationName: operation.operationName,
+          durationMs: Math.round(t1 - t0),
+          hasErrors: !!(response as any)?.errors?.length,
+        })
+      );
+    } catch {
+      // no-op
+    }
     return response;
   });
 });
@@ -60,13 +65,12 @@ const debugLink = new ApolloLink((operation, forward) => {
 function createClient(apiKey: string) {
   const httpLink = createHttpLink({ uri: GRAPHQL_URL, fetchOptions: { mode: "cors" } });
 
-  const authLink = setContext((_, { headers }) => {
-    const nextHeaders = {
+  const authLink = setContext((_, { headers }) => ({
+    headers: {
       ...headers,
-      "x-api-key": apiKey || "", // keep header stable; backend expects it
-    };
-    return { headers: nextHeaders };
-  });
+      "x-api-key": apiKey || "",
+    },
+  }));
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors?.length) {
@@ -107,21 +111,18 @@ function createClient(apiKey: string) {
 }
 
 const App = () => {
-  // Load persisted API key (if any)
+  // Persistent API key
   const storedKey = (typeof window !== "undefined" && localStorage.getItem("x_api_key")) || "";
   const [apiKey, setApiKey] = React.useState(storedKey);
   const [client, setClient] = React.useState(() => createClient(storedKey));
 
-  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newApiKey = e.target.value;
-    setApiKey(newApiKey);
-    setClient(createClient(newApiKey));
-    if (typeof window !== "undefined") {
-      localStorage.setItem("x_api_key", newApiKey);
-    }
-  };
+  // Onboarding flag
+  const [hasSeenOnboarding, setHasSeenOnboarding] = React.useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("seen_onboarding") === "true";
+  });
 
-  // One-shot health check on mount (helps confirm connectivity from inside the webview)
+  // Health check (optional)
   React.useEffect(() => {
     console.info("[Endoc] Runtime origin:", window.location.origin);
     console.info("[Endoc] Using GraphQL URL:", GRAPHQL_URL);
@@ -140,26 +141,40 @@ const App = () => {
         const text = await res.text();
         console.info("[Endoc] Health check status:", res.status);
         console.info("[Endoc] Health check body:", text);
-        if (!res.ok) {
-          toast.error(`Health check failed: HTTP ${res.status}`, {
-            icon: <span role="img" aria-label="warning">⚠️</span>,
-          });
-        }
       } catch (err: any) {
         console.error("[Endoc] Health check error:", err);
-        toast.error(`Health check error: ${err?.message ?? err}`, {
-          icon: <span role="img" aria-label="warning">⚠️</span>,
-        });
       }
     };
-    // Don’t spam the real API if no key yet; only ping when key exists
     if (apiKey) ping();
   }, [apiKey]);
+
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newApiKey = e.target.value;
+    setApiKey(newApiKey);
+    setClient(createClient(newApiKey));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("x_api_key", newApiKey);
+    }
+  };
+
+  // When user finishes onboarding
+  const handleOnboardingDone = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("seen_onboarding", "true");
+    }
+    setHasSeenOnboarding(true);
+    // We deliberately do NOT open any modal here to avoid loops.
+    // Users can open Settings from the gear any time.
+  };
 
   return (
     <ApolloProvider client={client}>
       <div className="root">
-        <Panel apiKey={apiKey} handleApiKeyChange={handleApiKeyChange} />
+        {!hasSeenOnboarding ? (
+          <Onboarding onGetStarted={handleOnboardingDone} />
+        ) : (
+          <Panel apiKey={apiKey} handleApiKeyChange={handleApiKeyChange} />
+        )}
       </div>
     </ApolloProvider>
   );

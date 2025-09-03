@@ -19,6 +19,10 @@ import { useEndocApi } from "../hooks/useEndocApi";
 import { AdvancedFilterState, Paper } from "../types";
 import { initialAdvancedFilter } from "../utils/filters";
 
+const ONBOARDING_DISMISSED_KEY = "endoc.onboardingDismissed";
+
+/* ------------------------------ UI bits ------------------------------ */
+
 const SearchButton = ({
   disabled,
   onClick,
@@ -49,7 +53,7 @@ const SearchButton = ({
   );
 };
 
-const ONBOARDING_DISMISSED_KEY = "endoc.onboardingDismissed";
+/* ------------------------------ Panel ------------------------------ */
 
 const Panel = ({
   apiKey,
@@ -68,7 +72,7 @@ const Panel = ({
     initialAdvancedFilter(),
   ]);
 
-  // Onboarding state
+  // Onboarding state: shown only on very first run, not tied to API key anymore.
   const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => {
     try {
       return localStorage.getItem(ONBOARDING_DISMISSED_KEY) === "1";
@@ -92,7 +96,14 @@ const Panel = ({
 
   // Events
   const onOpenSettings = useCallback(() => setShowTutorialWindow(true), []);
-  const onCloseSettings = useCallback(() => setShowTutorialWindow(false), []);
+  const onCloseSettings = useCallback(
+    /* accept reason if you wired it from TutorialWindow; we don’t need it here */
+    (_reason?: "backdropClick" | "escapeKeyDown" | "iconButton" | "programmatic") => {
+      setShowTutorialWindow(false);
+      // NOTE: do NOT toggle onboarding here; onboarding is controlled only by Get Started.
+    },
+    []
+  );
 
   const onAddFilter = useCallback(
     () => setAdvancedFilters((prev) => [...prev, initialAdvancedFilter()]),
@@ -187,16 +198,18 @@ const Panel = ({
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [runSearch]);
 
-  // Onboarding visibility:
-  // Show if not dismissed OR no API key yet.
-  const showOnboarding = !onboardingDismissed || !apiKey?.trim();
+  /* ----------------------- Onboarding visibility -----------------------
+     Show onboarding only until the user presses “Get started” once.
+     Do NOT tie it to API key presence anymore to avoid the loop.
+  ---------------------------------------------------------------------- */
+  const showOnboarding = !onboardingDismissed;
 
   const handleGetStarted = useCallback(() => {
     try {
       localStorage.setItem(ONBOARDING_DISMISSED_KEY, "1");
     } catch { /* ignore */ }
     setOnboardingDismissed(true);
-    setShowTutorialWindow(true); // jump directly to your existing setup dialog
+    setShowTutorialWindow(true); // jump to setup dialog
   }, []);
 
   return (
@@ -208,7 +221,11 @@ const Panel = ({
         <>
           {/* Normal app UI */}
           <div className="root">
-            <HeaderBar apiKey={apiKey} onOpenSettings={() => setShowTutorialWindow(true)} onQuickSearch={onQuickSearch} />
+            <HeaderBar
+              apiKey={apiKey}
+              onOpenSettings={onOpenSettings}
+              onQuickSearch={onQuickSearch}
+            />
 
             <div className="search-container">
               <SemanticSearchInput
@@ -252,7 +269,7 @@ const Panel = ({
       {/* Shared modals */}
       <TutorialWindow
         showTutorialWindow={showTutorialWindow}
-        closeTutorialWindow={() => setShowTutorialWindow(false)}
+        closeTutorialWindow={onCloseSettings}
         apiKey={apiKey}
         handleApiKeyChange={handleApiKeyChange}
       />
