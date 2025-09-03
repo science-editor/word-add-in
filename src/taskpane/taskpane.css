@@ -1,107 +1,222 @@
+/*
+ * Endoc Word Add‑in styles (modernized)
+ * - Keeps existing color scheme (primary #3b82f6 / hover #2563eb)
+ * - Introduces CSS variables, consistent spacing, shadows, and focus states
+ * - Light touch enhancements only (no breaking class name changes)
+ */
+
+/* --------------------------------------------------
+   Design tokens
+-------------------------------------------------- */
+:root {
+  /* colors */
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-text: #0f172a; /* slate-900 */
+  --color-muted: #475569; /* slate-600 */
+  --color-border: #e5e7eb; /* gray-200 */
+  --color-divider: #e2e8f0; /* slate-200 */
+  --color-primary: #3b82f6; /* blue-500 (unchanged) */
+  --color-primary-hover: #2563eb; /* blue-600 (unchanged) */
+  --color-primary-ring: rgba(59, 130, 246, 0.35);
+  --color-danger: #f43f5e; /* rose-500 */
+
+  /* radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  /* spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* elevation */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+
+  /* typography */
+  --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 700;
+
+  /* motion */
+  --transition-fast: 150ms ease;
+  --transition-med: 220ms ease;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+/* --------------------------------------------------
+   Base
+-------------------------------------------------- */
 .root {
-    min-height: 100vh;
-    padding: 20px;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  min-height: 100vh;
+  padding: var(--space-5);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
+
+p { font-family: var(--font-body); }
 
 .divider {
-    height: 1px;
-    background-color: #e2e8f0;
-    border: none;
-    margin: 16px 0;
+  height: 1px;
+  background-color: var(--color-divider);
+  border: none;
+  margin: var(--space-4) 0;
 }
 
-p{
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+/* Improve default focus outlines for keyboard users */
+:where(button, a, [role="button"], input, select, textarea):focus-visible {
+  outline: 3px solid var(--color-primary-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
+/* Reduce motion if the user prefers */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
 
-/* +++++++++++++++++++++++++++++++++++++++++++++++ Search Container +++++++++++++++++++++++++++++++++++++++++++++++  */
+/* --------------------------------------------------
+   Search container
+-------------------------------------------------- */
 .search-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
 }
 
 .search-btn {
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    background-color: #3b82f6;
-    width: 100%;
-    color: white;
-    padding: 10px 16px;
-    font-size: 20px;
-    font-weight: 400;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  font-family: var(--font-body);
+  background-color: var(--color-primary);
+  width: 100%;
+  color: #fff;
+  padding: 12px var(--space-4);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
-.search-btn:hover {
-    background-color: #2563eb; /* Blue-600 */
+.search-btn:hover { background-color: var(--color-primary-hover); }
+
+.search-btn:active { transform: translateY(1px); }
+
+.search-btn:focus-visible { box-shadow: 0 0 0 4px var(--color-primary-ring); }
+
+.search-btn:disabled {
+  background-color: #a8a8a8;
+  cursor: default;
+  box-shadow: none;
 }
 
-.search-btn:disabled{
-    background-color: #a8a8a8;
-    cursor: default;
-    transition: none;
-}
-
-
-/* +++++++++++++++++++++++++++++++++++++++++++++++ Papers Container +++++++++++++++++++++++++++++++++++++++++++++++  */
-
+/* --------------------------------------------------
+   Papers list / cards
+-------------------------------------------------- */
 .paper-box {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    padding: 0 10px 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-med), transform var(--transition-med), border-color var(--transition-fast);
+}
+
+.paper-box:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #d1d5db; /* gray-300 */
+}
+
+.paper-box h3 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.paper-box p, .paper-box span {
+  color: var(--color-muted);
 }
 
 .paper-box-buttons-container {
-    display: flex;
-    flex-direction: column;
-    margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-left: var(--space-4);
 }
 
+/* Ensure icon buttons look crisp on light backgrounds */
+.paper-box-buttons-container .MuiIconButton-root {
+  border-radius: 50%;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
 
-/* ++++++++++++++++++++++++++++++++++++++++++++++++++ Animations +++++++++++++++++++++++++++++++++++++++++++++++++++  */
-/* pulse ring grows and fades out */
+.paper-box-buttons-container .MuiIconButton-root:hover {
+  background-color: rgba(15, 23, 42, 0.04); /* slate-900 @ 4% */
+}
+
+/* --------------------------------------------------
+   Attention pulse
+-------------------------------------------------- */
 @keyframes attention-pulse {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(1.5);
-        opacity: 0;
-    }
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
 }
 
-.attention-pulse {
-    position: relative;
-    display: inline-flex;
-}
+.attention-pulse { position: relative; display: inline-flex; }
 
 .attention-pulse::after {
-    content: "";
-    position: absolute;
-    top: 50%; left: 50%;      /* center on the element */
-    width: 100%;              /* start same size as wrapper */
-    height: 100%;
-    border: 2px solid rgba(244, 67, 54, 0.7);
-    border-radius: 50%;
-    pointer-events: none;     /* clicks go through */
-    /* initial placement & visibility */
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0;
-    /* animate with smooth GPU-accelerated properties */
-    animation: attention-pulse 2s ease-out infinite;
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(244, 67, 54, 0.7); /* keep original accent */
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+  animation: attention-pulse 2s ease-out infinite;
+}
+
+/* --------------------------------------------------
+   Optional dark-mode polish (keeps primary colors)
+-------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0b1220;          /* near-slate dark */
+    --color-surface: #0f172a;     /* slate-900 */
+    --color-text: #e5e7eb;        /* gray-200 */
+    --color-muted: #cbd5e1;       /* slate-300 */
+    --color-border: #1f2a44;      /* darker divider */
+    --color-divider: #1f2a44;
+    --color-primary-ring: rgba(59, 130, 246, 0.45);
+  }
+
+  .root { box-shadow: none; }
+  .paper-box { border-color: var(--color-border); }
+  .paper-box:hover { border-color: #334155; }
+  .paper-box-buttons-container .MuiIconButton-root:hover { background-color: rgba(148, 163, 184, 0.12); }
 }
