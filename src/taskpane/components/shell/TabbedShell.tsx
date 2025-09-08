@@ -1,7 +1,7 @@
 // src/taskpane/components/shell/TabbedShell.tsx
 import * as React from "react";
 
-export type TabKey = "discover" | "library" | "settings";
+export type TabKey = "discover" | "settings";
 
 export function TabbedShell({
   value,
@@ -23,14 +23,6 @@ export function TabbedShell({
             onClick={() => onChange("discover")}
           >
             Discover
-          </button>
-          <button
-            role="tab"
-            aria-selected={value === "library"}
-            className={`tab ${value === "library" ? "is-active" : ""}`}
-            onClick={() => onChange("library")}
-          >
-            Library
           </button>
           <button
             role="tab"

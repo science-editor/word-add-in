@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
-import LinearProgress from "@mui/material/LinearProgress";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import { SemanticSearchInput } from "../panel/SemanticSearchInput";
 import KeywordFilter from "../KeywordFilter";
@@ -12,6 +12,9 @@ import SearchResultsPanel from "../SearchResultsPanel";
 import { AdvancedFilterState, Paper } from "../../types";
 import { SkeletonList } from "./SkeletonList";
 import { FiltersDrawer, FiltersLauncher } from "./FiltersDrawer";
+
+const PAD = 2; // 16px if theme.spacing(2)=16
+const CONTROL_MIN_HEIGHT = 48; // unify perceived control height
 
 export function DiscoverScreen({
   apiKeyPresent,
@@ -57,23 +60,26 @@ export function DiscoverScreen({
   const [filtersOpen, setFiltersOpen] = React.useState(false);
 
   return (
-    <Box sx={{ p: 2, mx: "auto" }}>
+    <Box sx={{ p: PAD, maxWidth: 780, mx: "auto" }}>
       {!apiKeyPresent && (
-        <Alert
-          severity="warning"
-          sx={{ mb: 2, "& .MuiAlert-message": { width: "100%" } }}
-          action={
-            <Button color="inherit" size="small" onClick={goToSettings}>
+        <Alert severity="warning" sx={{ mb: PAD, "& .MuiAlert-message": { width: "100%" } }}>
+          You need to connect Endoc with an API key before searching.
+          <Box sx={{ mt: 1 }}>
+            <Button
+              color="inherit"
+              size="medium"
+              fullWidth
+              onClick={goToSettings}
+              sx={{ minHeight: CONTROL_MIN_HEIGHT, textTransform: "none", fontWeight: 600 }}
+            >
               Go to Settings
             </Button>
-          }
-        >
-          You need to connect Endoc with an API key before searching.
+          </Box>
         </Alert>
       )}
 
-      {/* Search input + controls */}
-      <Box sx={{ display: "grid", gap: 2 }}>
+      {/* Search input + controls (gap equals outer padding for consistency) */}
+      <Box sx={{ display: "grid", gap: PAD }}>
         <SemanticSearchInput
           value={searchTerm}
           onChange={(v) => setSearchTerm(v)}
@@ -84,38 +90,40 @@ export function DiscoverScreen({
 
         <KeywordFilter selectedKeywords={keywords} onKeywordsChange={setKeywords} />
 
-        {/* Filters launcher just above the Search button; badge sits next to text */}
-        <FiltersLauncher count={advancedFilters.length} onOpen={() => setFiltersOpen(true)} />
+        {/* Compact entry for advanced filters */}
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <FiltersLauncher count={advancedFilters.length} onOpen={() => setFiltersOpen(true)} />
+        </Box>
 
-        {/* Full-width Search button, but same control height */}
+        {/* Full-width search button with inline spinner */}
         <Button
           variant="contained"
-          size="small"
+          size="medium"
           onClick={() => onRunSearch(searchTerm)}
           disabled={!apiKeyPresent || loading || !searchTerm}
+          startIcon={
+            loading ? <CircularProgress size={18} color="inherit" sx={{ mr: -0.5 }} /> : null
+          }
           sx={{
-            height: 40,                 // ← same height as inputs
             width: "100%",
             textTransform: "none",
             fontWeight: 600,
+            minHeight: CONTROL_MIN_HEIGHT,
           }}
         >
-          Search
+          {loading ? "Searching…" : "Search"}
         </Button>
       </Box>
 
+      {/* Loading state: skeleton cards */}
       {loading && (
-        <>
-          <Box sx={{ width: "100%", mt: 3 }}>
-            <LinearProgress />
-          </Box>
-          <Divider sx={{ my: 3 }} />
+        <Box sx={{ mt: PAD }}>
           <SkeletonList rows={6} />
-        </>
+        </Box>
       )}
 
       {!loading && results && (
-        <Box sx={{ mt: 3 }}>
+        <Box sx={{ mt: PAD }}>
           <SearchResultsPanel
             foundPapers={results || []}
             handleClickReadPaper={onReadPaper}

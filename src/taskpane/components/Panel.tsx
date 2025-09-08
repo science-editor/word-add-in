@@ -208,14 +208,7 @@ export default function Panel({
             onAddToZotero={onAddToZotero}
           />
         )}
-
-        {tab === "library" && (
-          // Placeholder for now
-          <Box sx={{ p: 2, color: "text.secondary" }}>
-            Library coming soon.
-          </Box>
-        )}
-
+        
         {tab === "settings" && (
           <SettingsScreen
             apiKey={apiKey}

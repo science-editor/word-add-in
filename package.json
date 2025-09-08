@@ -19,14 +19,12 @@
     "lint:fix": "office-addin-lint fix",
     "prettier": "office-addin-lint prettier",
     "validate": "office-addin-manifest validate manifest.xml",
-
-    "dev-server": "webpack serve --mode development",
-
+    "dev-server": "webpack serve --mode development --port 7070",
     "start:word": "office-addin-debugging start manifest.xml desktop",
     "stop": "office-addin-debugging stop manifest.xml",
-
     "patch-manifest": "node scripts/patch-manifest.js",
-
+    "killports": "kill-port 7070 3001",
+    "dev": "npm-run-all -s stop patch-manifest killports -p dev-server start:word",
     "start": "npm-run-all -s patch-manifest start:word"
   },
   "dependencies": {
@@ -59,6 +57,7 @@
     "@types/webpack": "^5.28.5",
     "acorn": "^8.11.3",
     "babel-loader": "^9.1.3",
+    "concurrently": "^9.2.1",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.2",
     "dotenv": "^16.4.5",
@@ -67,6 +66,7 @@
     "file-loader": "^6.2.0",
     "html-loader": "^1.3.2",
     "html-webpack-plugin": "^4.5.2",
+    "kill-port": "^2.0.1",
     "less": "^4.2.0",
     "less-loader": "^12.2.0",
     "npm-run-all": "^4.1.5",

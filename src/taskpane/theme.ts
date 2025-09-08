@@ -2,16 +2,12 @@ import { createTheme } from "@mui/material/styles";
 
 export type ColorMode = "light" | "dark";
 
-/**
- * Create a compact, MS-Word-friendly MUI theme.
- * We keep typography modest so it doesn't look oversized next to native UI.
- */
 export function makeMuiTheme(mode: ColorMode) {
   return createTheme({
     palette: {
       mode,
       primary: {
-        main: "#3b82f6",   // your existing blue
+        main: "#3b82f6",
       },
       background: {
         default: mode === "dark" ? "#0b1220" : "#ffffff",
@@ -24,7 +20,7 @@ export function makeMuiTheme(mode: ColorMode) {
       divider: mode === "dark" ? "#1f2a44" : "#e2e8f0",
     },
     typography: {
-      fontSize: 14,  // base; MUI uses rem so it respects system scaling
+      fontSize: 14,
       h4: { fontSize: "1.6rem", fontWeight: 700 },
       h5: { fontSize: "1.25rem", fontWeight: 700 },
       body1: { fontSize: "0.95rem" },

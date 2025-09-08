@@ -5,11 +5,40 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <!-- Tell the engine we support dark/light controls -->
     <meta name="color-scheme" content="light dark" />
-
     <title>Endoc Task Pane Add-in</title>
+
+    <!-- Inline CSS to prevent light→dark flash and honor system text scaling -->
+    <style>
+      /* Respect OS/browser text scaling */
+      html {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      /* Set initial background/text based on system preference BEFORE React loads */
+      @media (prefers-color-scheme: dark) {
+        html, body {
+          background: #0b1220;
+          color: #e5e7eb;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        html, body {
+          background: #ffffff;
+          color: #0f172a;
+        }
+      }
+      /* Make the root container fill the WebView */
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+      #container {
+        height: 100%;
+      }
+    </style>
 
     <!-- Office JavaScript API (must be loaded before using Office.*) -->
     <script
@@ -18,7 +47,7 @@
     ></script>
   </head>
 
-  <body style="width: 100%; height: 100%; margin: 0; padding: 0;">
+  <body>
     <div id="container"></div>
 
     <!-- Message for legacy Trident/EdgeHTML engines -->
@@ -40,3 +69,215 @@
     </script>
   </body>
 </html>
+export type ColorMode = "light" | "dark";
+
+/**
+ * Build a Material UI theme that:
+ *  - starts in the correct color mode (light/dark)
+ *  - uses rem-based typography and scales responsively
+ *  - keeps your existing color tokens
+ */
+export function makeMuiTheme(mode: ColorMode) {
+  let theme = createTheme({
+    palette: {
+      mode,
+      primary: {
+        main: "#3b82f6",
+      },
+      background: {
+        default: mode === "dark" ? "#0b1220" : "#ffffff",
+        paper: mode === "dark" ? "#0f172a" : "#ffffff",
+      },
+      text: {
+        primary: mode === "dark" ? "#e5e7eb" : "#0f172a",
+        secondary: mode === "dark" ? "#cbd5e1" : "#475569",
+      },
+      divider: mode === "dark" ? "#1f2a44" : "#e2e8f0",
+    },
+    typography: {
+      fontSize: 14,
+      h4: { fontWeight: 700 },
+      h5: { fontWeight: 700 },
+      button: { textTransform: "none" },
+      fontFamily:
+        `'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif`,
+    },
+    shape: { borderRadius: 10 },
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          ":root": {
+            WebkitTextSizeAdjust: "100%",
+            textSizeAdjust: "100%",
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: { root: { boxShadow: "none" } },
+      },
+      MuiPaper: {
+        styleOverrides: { root: { backgroundImage: "none" } },
+      },
+    },
+  });
+
+  theme = responsiveFontSizes(theme, {
+    breakpoints: ["sm", "md", "lg"],
+    factor: 2,
+    variants: ["h1", "h2", "h3", "h4", "h5", "h6"],
+  });
+
+  return theme;
+}
+import { createTheme, responsiveFontSizes } from "@mui/material/styles";
+
+export type ColorMode = "light" | "dark";
+
+/**
+ * Build a Material UI theme that:
+ *  - starts in the correct color mode (light/dark)
+ *  - uses rem-based typography and scales responsively
+ *  - keeps your existing color tokens
+ */
+export function makeMuiTheme(mode: ColorMode) {
+  let theme = createTheme({
+    palette: {
+      mode,
+      primary: {
+        main: "#3b82f6",
+      },
+      background: {
+        default: mode === "dark" ? "#0b1220" : "#ffffff",
+        paper: mode === "dark" ? "#0f172a" : "#ffffff",
+      },
+      text: {
+        primary: mode === "dark" ? "#e5e7eb" : "#0f172a",
+        secondary: mode === "dark" ? "#cbd5e1" : "#475569",
+      },
+      divider: mode === "dark" ? "#1f2a44" : "#e2e8f0",
+    },
+    typography: {
+      fontSize: 14,
+      h4: { fontWeight: 700 },
+      h5: { fontWeight: 700 },
+      button: { textTransform: "none" },
+      fontFamily:
+        `'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif`,
+    },
+    shape: { borderRadius: 10 },
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          ":root": {
+            WebkitTextSizeAdjust: "100%",
+            textSizeAdjust: "100%",
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: { root: { boxShadow: "none" } },
+      },
+      MuiPaper: {
+        styleOverrides: { root: { backgroundImage: "none" } },
+      },
+    },
+  });
+
+  theme = responsiveFontSizes(theme, {
+    breakpoints: ["sm", "md", "lg"],
+    factor: 2,
+    variants: ["h1", "h2", "h3", "h4", "h5", "h6"],
+  });
+
+  return theme;
+}
+import * as React from "react";
+import { createRoot } from "react-dom/client";
+
+// MUI theming
+import { ThemeProvider, CssBaseline } from "@mui/material";
+import { makeMuiTheme, ColorMode } from "./theme";
+
+// Fluent UI theming
+import {
+  FluentProvider,
+  webLightTheme,
+  webDarkTheme,
+} from "@fluentui/react-components";
+
+import App from "./components/App";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+
+/* global document, Office, module, require, HTMLElement */
+
+const rootElement: HTMLElement | null = document.getElementById("container");
+const root = rootElement ? createRoot(rootElement) : undefined;
+
+/** Decide dark or light based on system preference (always returns). */
+function detectInitialMode(): ColorMode {
+  try {
+    if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+      const mql = window.matchMedia("(prefers-color-scheme: dark)");
+      return mql.matches ? "dark" : "light";
+    }
+  } catch {
+    // ignore
+  }
+  return "light";
+}
+
+function Index(): JSX.Element {
+  const [mode, setMode] = React.useState<ColorMode>(detectInitialMode());
+
+  // Keep MUI + Fluent synced with OS theme changes
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => setMode(e.matches ? "dark" : "light");
+
+    mql.addEventListener?.("change", handler);
+    // @ts-ignore
+    mql.addListener?.(handler);
+
+    return () => {
+      mql.removeEventListener?.("change", handler);
+      // @ts-ignore
+      mql.removeListener?.(handler);
+    };
+  }, []);
+
+  const muiTheme = React.useMemo(() => makeMuiTheme(mode), [mode]);
+  const fluentTheme = mode === "dark" ? webDarkTheme : webLightTheme;
+
+  return (
+    <FluentProvider theme={fluentTheme}>
+      <ThemeProvider theme={muiTheme}>
+        <CssBaseline />
+        <App />
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="auto"
+        />
+      </ThemeProvider>
+    </FluentProvider>
+  );
+}
+
+/* Render application after Office initializes */
+Office.onReady(() => {
+  root?.render(<Index />);
+});
+
+if ((module as any).hot) {
+  (module as any).hot.accept("./components/App", () => {
+    const NextApp = require("./components/App").default;
+    root?.render(<NextApp />);
+  });
+}

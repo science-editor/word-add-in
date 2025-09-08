@@ -1,21 +1,31 @@
-// src/taskpane/components/KeywordFilter.tsx
-import React, { useState, SyntheticEvent } from "react";
+// Libraries
+import React, { useState, SyntheticEvent, KeyboardEvent } from "react";
 import { useLazyQuery } from "@apollo/client";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
+
+// Local
 import { KEYWORD_SUGGESTIONS } from "../schemas.js";
 
 interface ChipAutocompleteProps {
   selectedKeywords: string[];
   onKeywordsChange: (keywords: string[]) => void;
 }
+
 interface KeywordSuggestionsData {
-  keywordSuggestions: { status: string; message: string; response: string[] };
+  keywordSuggestions: {
+    status: string;
+    message: string;
+    response: string[];
+  };
 }
+
 interface KeywordSuggestionsVars {
   keyword: string;
 }
+
+const CONTROL_MIN_HEIGHT = 48; // match all inputs/buttons
 
 export default function KeywordFilter({
   selectedKeywords,
@@ -30,26 +40,34 @@ export default function KeywordFilter({
   >(KEYWORD_SUGGESTIONS, {
     fetchPolicy: "network-only",
     onCompleted: ({ keywordSuggestions }) => {
-      setSuggestions(Array.from(new Set(keywordSuggestions.response)));
+      const options = Array.from(new Set(keywordSuggestions.response));
+      setSuggestions(options);
     },
-    onError: (err) => console.error("Keyword suggestions error:", err),
+    onError: (err) => {
+      console.error("Keyword suggestions error:", err);
+    },
   });
 
-  const handleInputChange = (_e: SyntheticEvent, v: string) => {
-    setInputValue(v);
-    v ? fetchKeywordSuggestions({ variables: { keyword: v } }) : setSuggestions([]);
+  const handleInputChange = (_event: SyntheticEvent, newInputValue: string) => {
+    setInputValue(newInputValue);
+    if (newInputValue) {
+      fetchKeywordSuggestions({ variables: { keyword: newInputValue } });
+    } else {
+      setSuggestions([]);
+    }
   };
 
-  const handleValueChange = (_e: SyntheticEvent, v: string[]) => {
-    onKeywordsChange(v);
+  const handleValueChange = (_event: SyntheticEvent, newValue: string[]) => {
+    onKeywordsChange(newValue);
   };
 
-  const handleEnter = (event: React.KeyboardEvent) => {
+  const handleEnter = (event: KeyboardEvent) => {
     if (event.key === "Enter" && inputValue.trim() !== "") {
-      const next = Array.from(new Set([...selectedKeywords, inputValue.trim()]));
-      onKeywordsChange(next);
+      const newKeywords = Array.from(new Set([...selectedKeywords, inputValue.trim()]));
+      onKeywordsChange(newKeywords);
       setInputValue("");
       setSuggestions([]);
+      event.preventDefault();
     }
   };
 
@@ -70,16 +88,27 @@ export default function KeywordFilter({
       loadingText=""
       noOptionsText=""
       popupIcon={null}
-      size="small"          // ← unified size
+      size="small"
       fullWidth
       sx={{
         minWidth: 0,
-        "& .MuiInputBase-root": { height: 40 },         // same height
-        "& .MuiInputBase-input": { fontSize: 14, pt: 0, pb: 0 },
-        "& .MuiInputLabel-root": { fontSize: 14 },
+        // Make the control line up in height with text fields/buttons,
+        // but allow it to get taller when chips wrap.
+        "& .MuiInputBase-root": {
+          minHeight: CONTROL_MIN_HEIGHT,
+          alignItems: "center",
+        },
+        // Ensure the chips don’t get clipped when they wrap.
+        "& .MuiAutocomplete-inputRoot": {
+          paddingTop: 0.5,
+          paddingBottom: 0.5,
+        },
+        "& .MuiChip-root": {
+          margin: "2px",
+        },
       }}
-      renderTags={(selected, getTagProps) =>
-        selected.map((option, index) => (
+      renderTags={(value, getTagProps) =>
+        value.map((option: string, index: number) => (
           <Chip key={option} variant="outlined" label={option} {...getTagProps({ index })} />
         ))
       }
@@ -88,11 +117,14 @@ export default function KeywordFilter({
           {...params}
           variant="outlined"
           size="small"
-          label="Keyword Filter"
+          label="Keyword filter"
           placeholder={selectedKeywords.length > 0 ? "" : "Constrain your search with keywords"}
           error={!!error}
           helperText={error ? error.message : ""}
           onKeyDown={handleEnter}
+          // keep label/input font sizes aligned with other fields
+          InputLabelProps={{ sx: { fontSize: 14 } }}
+          inputProps={{ ...params.inputProps, "aria-label": "Keyword filter" }}
         />
       )}
     />

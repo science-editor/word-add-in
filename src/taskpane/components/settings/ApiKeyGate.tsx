@@ -16,22 +16,37 @@ export function ApiKeyGate({
 }) {
   return (
     <Alert severity={problem ? "error" : "info"} sx={{ mb: 2 }}>
-      <AlertTitle>{problem ? "Action required" : "Connect Endoc"}</AlertTitle>
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+      <AlertTitle sx={{ fontWeight: 700 }}>
+        {problem ? "Action required" : "Connect Endoc"}
+      </AlertTitle>
+
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        sx={{ mt: 1 }}
+      >
         <TextField
           value={apiKey}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Paste your Endoc API key"
-          size="small"
-          sx={{ flex: 1 }}
+          size="medium"
+          fullWidth
+          sx={{
+            "& .MuiInputBase-root": { height: 48 },
+          }}
         />
-        <Button
-          variant="contained"
-          onClick={onValidate}
-          disabled={!apiKey.trim() || !!busy}
-        >
-          {busy ? "Checking…" : "Check connection"}
-        </Button>
+
+        <Box sx={{ display: "flex" }}>
+          <Button
+            variant="contained"
+            onClick={onValidate}
+            disabled={!apiKey.trim() || !!busy}
+            sx={{ height: 48, px: 2.5, textTransform: "none", fontWeight: 600, width: { xs: "100%", sm: "auto" } }}
+          >
+            {busy ? "Checking…" : "Check connection"}
+          </Button>
+        </Box>
       </Stack>
     </Alert>
   );

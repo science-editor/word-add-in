@@ -20,12 +20,8 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import CloseIcon from "@mui/icons-material/Close";
 
 const CONTROL_SIZE: "small" = "small";
+const SPACING = 2; // 16px if your theme.spacing(2) = 16px
 
-/**
- * NOTE:
- * - No MUI Grid usage to avoid v1 vs v2 API type conflicts.
- * - Flex layout keeps all controls aligned, wrapped, and 40px tall.
- */
 const AdvancedFilter = ({
   id,
   filterType,
@@ -78,29 +74,26 @@ const AdvancedFilter = ({
     filterType === "author_family_name" ||
     filterType === "doi";
 
-  // Enforce consistent 40px control height and 14px font across inputs/selects
+  // Consistent min height but allow growth
   const controlSx = {
-    "& .MuiInputBase-root": { height: 40 },
-    "& .MuiInputBase-input": { fontSize: 14, pt: 0, pb: 0 },
+    "& .MuiInputBase-root": { minHeight: 48 },
+    "& .MuiInputBase-input": { fontSize: 14 },
     "& .MuiInputLabel-root": { fontSize: 14 },
   };
 
   return (
     <Box
       sx={{
-        p: 1,
+        p: SPACING,
         borderRadius: 1,
         border: (t) => `1px dashed ${t.palette.divider}`,
       }}
     >
-      {/* Row of controls, wraps cleanly on small widths */}
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: 1.5,
-        }}
+      <Stack
+        direction="row"
+        spacing={SPACING}
+        alignItems="flex-start"
+        flexWrap="wrap"
       >
         {/* Type */}
         <Box sx={{ minWidth: 220, flex: "1 1 220px" }}>
@@ -154,7 +147,7 @@ const AdvancedFilter = ({
           </Box>
         )}
 
-        {/* Boolean radio (True/False) */}
+        {/* Boolean radio */}
         {needsBool && (
           <Box sx={{ flex: "0 1 auto" }}>
             <FormControl size={CONTROL_SIZE}>
@@ -173,7 +166,7 @@ const AdvancedFilter = ({
           </Box>
         )}
 
-        {/* Values (chips) */}
+        {/* Values */}
         {needsValuesChips && (
           <Box sx={{ minWidth: 220, flex: "1 1 300px" }}>
             <Autocomplete
@@ -185,7 +178,7 @@ const AdvancedFilter = ({
               clearIcon={false}
               fullWidth
               size={CONTROL_SIZE}
-              sx={{ minWidth: 0, ...controlSx }}
+              sx={controlSx}
               renderTags={(value, getTagProps) =>
                 value.map((option: string, index: number) => (
                   <Chip key={option} label={option} variant="outlined" {...getTagProps({ index })} />
@@ -214,25 +207,21 @@ const AdvancedFilter = ({
             <CloseIcon fontSize="inherit" />
           </IconButton>
         </Box>
+      </Stack>
 
-        {/* Year range slider (full width row) */}
-        {filterType === "publication_year_range" && (
-          <Box sx={{ flexBasis: "100%", mt: 0.5 }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Box sx={{ width: "100%", px: 1 }}>
-                <Slider
-                  value={sliderValues}
-                  onChange={handleValuesChange}
-                  valueLabelDisplay="auto"
-                  min={MIN}
-                  max={MAX}
-                  step={1}
-                />
-              </Box>
-            </Stack>
-          </Box>
-        )}
-      </Box>
+      {/* Year range slider */}
+      {filterType === "publication_year_range" && (
+        <Box sx={{ mt: SPACING }}>
+          <Slider
+            value={sliderValues}
+            onChange={handleValuesChange}
+            valueLabelDisplay="auto"
+            min={MIN}
+            max={MAX}
+            step={1}
+          />
+        </Box>
+      )}
     </Box>
   );
 };
