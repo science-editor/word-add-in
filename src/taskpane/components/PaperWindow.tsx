@@ -1,3 +1,4 @@
+// src/taskpane/components/PaperWindow.tsx
 import * as React from "react";
 import {
   Dialog,
@@ -19,6 +20,11 @@ const ZOTERO_RED = "#CC2936";
 const ZOTERO_ICON_URL =
   "https://raw.githubusercontent.com/science-editor/word-add-in/refs/heads/main/assets/zotero-icon.ico";
 
+// Vertical spacing rhythm (in theme.spacing units)
+const RHYTHM = 1.25;
+// Tighter horizontal gap between chips when side-by-side
+const H_GAP = 0.75;
+
 type Props = {
   expandedPaper: any | null;
   setExpandedPaper: (p: any | null) => void;
@@ -34,7 +40,6 @@ export default function PaperWindow({
   const [added, setAdded] = React.useState(false);
 
   React.useEffect(() => {
-    // Reset state when paper changes
     setAdding(false);
     setAdded(false);
   }, [expandedPaper]);
@@ -49,6 +54,11 @@ export default function PaperWindow({
       setAdding(false);
     }
   };
+
+  const hasYear =
+    expandedPaper?.year !== undefined &&
+    expandedPaper?.year !== null &&
+    expandedPaper?.year !== "";
 
   return (
     <Dialog
@@ -88,7 +98,8 @@ export default function PaperWindow({
 
       {/* Header */}
       <DialogContent sx={{ pt: 2, pb: 1 }}>
-        <Stack spacing={1.25}>
+        {/* Every child below respects a single vertical rhythm */}
+        <Stack spacing={RHYTHM}>
           <Typography
             variant="h6"
             fontWeight={700}
@@ -170,40 +181,53 @@ export default function PaperWindow({
             {expandedPaper?.venue || <em>Not available</em>}
           </Typography>
 
-          <Typography variant="body2" color="text.secondary">
-            <strong>Year:</strong>{" "}
-            {expandedPaper?.year ?? <em>Not available</em>}
-          </Typography>
+          {hasYear && (
+            <Typography variant="body2" color="text.secondary">
+              <strong>Year:</strong> {expandedPaper?.year}
+            </Typography>
+          )}
 
-          <Stack direction="row" spacing={1} sx={{ pt: 0.5, flexWrap: "wrap" }}>
+          {/* Chips group: same vertical rhythm to siblings; tighter horizontal gap within */}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "flex-start",
+              // exact vertical rhythm between wrapped rows
+              rowGap: (t) => t.spacing(RHYTHM),
+              // tighter horizontal spacing when side-by-side
+              columnGap: (t) => t.spacing(H_GAP),
+            }}
+          >
             <DOIChip paper={expandedPaper} />
             <GoogleScholarChip paper={expandedPaper} />
-          </Stack>
+          </Box>
         </Stack>
       </DialogContent>
 
-      <Divider />
+      {/* Divider with the same rhythm above/below sections */}
+      <Divider sx={{ my: RHYTHM }} />
 
       {/* Abstract */}
-      <DialogContent sx={{ py: 2 }}>
-        <Typography variant="subtitle2" sx={{ mb: 0.75 }}>
-          Abstract
-        </Typography>
-        <Typography variant="body2" color="text.primary" sx={{ whiteSpace: "pre-wrap" }}>
-          {expandedPaper?.abstract || "Abstract not available for this paper."}
-        </Typography>
+      <DialogContent sx={{ py: 0 }}>
+        <Stack spacing={RHYTHM}>
+          <Typography variant="subtitle2">Abstract</Typography>
+          <Typography variant="body2" color="text.primary" sx={{ whiteSpace: "pre-wrap" }}>
+            {expandedPaper?.abstract || "Abstract not available for this paper."}
+          </Typography>
+        </Stack>
       </DialogContent>
 
-      <Divider />
+      <Divider sx={{ my: RHYTHM }} />
 
       {/* Full text */}
-      <DialogContent sx={{ py: 2, pb: 3 }}>
-        <Typography variant="subtitle2" sx={{ mb: 0.75 }}>
-          Full text
-        </Typography>
-        <Typography variant="body2" color="text.primary" sx={{ whiteSpace: "pre-wrap" }}>
-          {expandedPaper?.fullPaper || "Full body not available for this paper."}
-        </Typography>
+      <DialogContent sx={{ py: 0, pb: 2 }}>
+        <Stack spacing={RHYTHM}>
+          <Typography variant="subtitle2">Full text</Typography>
+          <Typography variant="body2" color="text.primary" sx={{ whiteSpace: "pre-wrap" }}>
+            {expandedPaper?.fullPaper || "Full body not available for this paper."}
+          </Typography>
+        </Stack>
       </DialogContent>
     </Dialog>
   );
