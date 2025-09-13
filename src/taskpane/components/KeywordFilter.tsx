@@ -1,5 +1,5 @@
 // Libraries
-import React, { useState, SyntheticEvent, KeyboardEvent } from "react";
+import React, { useState, SyntheticEvent } from "react";
 import { useLazyQuery } from "@apollo/client";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
@@ -25,7 +25,8 @@ interface KeywordSuggestionsVars {
   keyword: string;
 }
 
-const CONTROL_MIN_HEIGHT = 48; // match all inputs/buttons
+const CONTROL_MIN_HEIGHT = 48;
+const CONTROL_FONT_SIZE = 14;
 
 export default function KeywordFilter({
   selectedKeywords,
@@ -61,13 +62,12 @@ export default function KeywordFilter({
     onKeywordsChange(newValue);
   };
 
-  const handleEnter = (event: KeyboardEvent) => {
+  const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && inputValue.trim() !== "") {
       const newKeywords = Array.from(new Set([...selectedKeywords, inputValue.trim()]));
       onKeywordsChange(newKeywords);
       setInputValue("");
       setSuggestions([]);
-      event.preventDefault();
     }
   };
 
@@ -88,27 +88,14 @@ export default function KeywordFilter({
       loadingText=""
       noOptionsText=""
       popupIcon={null}
-      size="small"
       fullWidth
+      // Unify base height & font-size; chips will expand when present (that’s OK)
       sx={{
-        minWidth: 0,
-        // Make the control line up in height with text fields/buttons,
-        // but allow it to get taller when chips wrap.
-        "& .MuiInputBase-root": {
-          minHeight: CONTROL_MIN_HEIGHT,
-          alignItems: "center",
-        },
-        // Ensure the chips don’t get clipped when they wrap.
-        "& .MuiAutocomplete-inputRoot": {
-          paddingTop: 0.5,
-          paddingBottom: 0.5,
-        },
-        "& .MuiChip-root": {
-          margin: "2px",
-        },
+        "& .MuiInputBase-root": { minHeight: CONTROL_MIN_HEIGHT, fontSize: CONTROL_FONT_SIZE },
+        "& .MuiInputBase-input": { py: 1 },
       }}
-      renderTags={(value, getTagProps) =>
-        value.map((option: string, index: number) => (
+      renderTags={(selected, getTagProps) =>
+        selected.map((option, index) => (
           <Chip key={option} variant="outlined" label={option} {...getTagProps({ index })} />
         ))
       }
@@ -116,15 +103,14 @@ export default function KeywordFilter({
         <TextField
           {...params}
           variant="outlined"
-          size="small"
+          size="medium"
           label="Keyword filter"
           placeholder={selectedKeywords.length > 0 ? "" : "Constrain your search with keywords"}
+          // keep label small & static
+          InputLabelProps={{ shrink: true }}
           error={!!error}
-          helperText={error ? error.message : ""}
+          helperText={error ? error.message : undefined}
           onKeyDown={handleEnter}
-          // keep label/input font sizes aligned with other fields
-          InputLabelProps={{ sx: { fontSize: 14 } }}
-          inputProps={{ ...params.inputProps, "aria-label": "Keyword filter" }}
         />
       )}
     />

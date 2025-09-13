@@ -1,61 +1,88 @@
-// src/taskpane/components/AdvancedFilter.tsx
-import React, { useEffect } from "react";
+import * as React from "react";
 import {
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  Slider,
-  TextField,
-  Chip,
-  IconButton,
-  Autocomplete,
   Box,
   Stack,
+  TextField,
+  Chip,
+  Slider,
+  IconButton,
+  Autocomplete,
+  FormControl,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
-import { SelectChangeEvent } from "@mui/material/Select";
 import CloseIcon from "@mui/icons-material/Close";
 
-const CONTROL_SIZE: "small" = "small";
-const SPACING = 2; // 16px if your theme.spacing(2) = 16px
+type Props = {
+  id: string;
+  filterType: string;
+  values: any[];
+  condition: string;
+  closeFilter: (id: string) => void;
+  updateAdvancedFilter: (id: string, key: string, val: any) => void;
+};
 
-const AdvancedFilter = ({
+/** Match Discover screen spacing & heights */
+const PAD = 2; // same as Discover
+const CONTROL_MIN_HEIGHT = 48;
+const MIN_YEAR = 1940;
+const MAX_YEAR = new Date().getFullYear();
+
+export default function AdvancedFilter({
   id,
   filterType,
   values,
   condition,
   closeFilter,
   updateAdvancedFilter,
-}) => {
-  const MIN = 1940;
-  const MAX = new Date().getFullYear();
-  const sliderValues = Array.isArray(values) && values.length === 2 ? values : [MIN, MAX];
+}: Props) {
+  const range =
+    Array.isArray(values) && values.length === 2
+      ? (values as number[])
+      : [MIN_YEAR, MAX_YEAR];
 
-  const handleFilterChange = (event: SelectChangeEvent) => {
-    const newType = event.target.value as string;
-    updateAdvancedFilter(id, "filterType", newType);
-    updateAdvancedFilter(id, "values", []);
-  };
+  const singleYear =
+    Array.isArray(values) && typeof values[0] === "number"
+      ? (values[0] as number)
+      : MAX_YEAR;
 
-  const handleConditionChange = (event: SelectChangeEvent) => {
-    updateAdvancedFilter(id, "condition", event.target.value as string);
-  };
-
-  const handleValuesChange = (_event: any, newInputValues: any) => {
-    updateAdvancedFilter(id, "values", newInputValues);
-  };
-
-  useEffect(() => {
-    if (filterType === "publication_year_range") {
-      updateAdvancedFilter(id, "values", [MIN, MAX]);
+  // Handlers — use HTMLInputElement to satisfy MUI TextField(select) typing
+  const onTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    updateAdvancedFilter(id, "filterType", next);
+    if (next === "publication_year_range") {
+      updateAdvancedFilter(id, "values", [MIN_YEAR, MAX_YEAR]);
+    } else if (next === "publication_year") {
+      updateAdvancedFilter(id, "values", [MAX_YEAR]);
+    } else {
+      updateAdvancedFilter(id, "values", []);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterType]);
+  };
 
-  const needsBool = filterType === "abstract_parsed" || filterType === "fullbody_parsed";
+  const onConditionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateAdvancedFilter(id, "condition", e.target.value);
+  };
+
+  const onBooleanChange = (_e: React.ChangeEvent<HTMLInputElement>, val: string) => {
+    updateAdvancedFilter(id, "condition", val);
+  };
+
+  const onValuesChipsChange = (_e: any, newVals: string[]) => {
+    updateAdvancedFilter(id, "values", newVals);
+  };
+
+  const onRangeChange = (_: Event, newVal: number | number[]) => {
+    if (Array.isArray(newVal)) updateAdvancedFilter(id, "values", newVal);
+  };
+
+  const onSingleYearChange = (_: Event, newVal: number | number[]) => {
+    if (!Array.isArray(newVal)) updateAdvancedFilter(id, "values", [newVal]);
+  };
+
+  const needsBool =
+    filterType === "abstract_parsed" || filterType === "fullbody_parsed";
+
   const needsIsIsNot =
     filterType === "publication_year" ||
     filterType === "publication_year_range" ||
@@ -63,167 +90,170 @@ const AdvancedFilter = ({
     filterType === "author_given_name" ||
     filterType === "author_family_name" ||
     filterType === "doi";
-  const needsIncludesExcludes = filterType === "title" || filterType === "venue";
 
-  const needsValuesChips =
+  const needsIncludesExcludes =
+    filterType === "title" || filterType === "venue";
+
+  const showChips =
     filterType === "title" ||
     filterType === "venue" ||
-    filterType === "publication_year" ||
     filterType === "author_full_name" ||
     filterType === "author_given_name" ||
     filterType === "author_family_name" ||
     filterType === "doi";
 
-  // Consistent min height but allow growth
-  const controlSx = {
-    "& .MuiInputBase-root": { minHeight: 48 },
-    "& .MuiInputBase-input": { fontSize: 14 },
-    "& .MuiInputLabel-root": { fontSize: 14 },
-  };
-
   return (
     <Box
       sx={{
-        p: SPACING,
-        borderRadius: 1,
-        border: (t) => `1px dashed ${t.palette.divider}`,
+        border: (t) => `1px solid ${t.palette.divider}`,
+        borderRadius: 1.25,
+        p: 1.5,
+        backgroundColor: (t) => t.palette.background.paper,
+        width: "100%",
       }}
     >
-      <Stack
-        direction="row"
-        spacing={SPACING}
-        alignItems="flex-start"
-        flexWrap="wrap"
-      >
-        {/* Type */}
-        <Box sx={{ minWidth: 220, flex: "1 1 220px" }}>
-          <FormControl fullWidth size={CONTROL_SIZE} sx={controlSx}>
-            <InputLabel id={`filter-type-${id}`}>Advanced Filter</InputLabel>
-            <Select
-              labelId={`filter-type-${id}`}
-              value={filterType}
-              label="Advanced Filter"
-              onChange={handleFilterChange}
-            >
-              <MenuItem value="">No Filter</MenuItem>
-              <MenuItem value="publication_year">Publication Year</MenuItem>
-              <MenuItem value="publication_year_range">Publication Year Range</MenuItem>
-              <MenuItem value="author_full_name">Author Full Name</MenuItem>
-              <MenuItem value="author_given_name">Author Given Name</MenuItem>
-              <MenuItem value="author_family_name">Author Family Name</MenuItem>
-              <MenuItem value="title">Title</MenuItem>
-              <MenuItem value="venue">Venue</MenuItem>
-              <MenuItem value="doi">DOI</MenuItem>
-              <MenuItem value="abstract_parsed">Abstract Parsed</MenuItem>
-              <MenuItem value="fullbody_parsed">Fullbody Parsed</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+      {/* spacing == PAD to match Discover’s vertical rhythm */}
+      <Stack spacing={PAD}>
+        {/* Row 1: selector + close */}
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            label="Advanced Filter"
+            value={filterType}
+            onChange={onTypeChange}
+            size="medium"
+            fullWidth
+            InputLabelProps={{ shrink: true }} // label always visible
+            sx={{ "& .MuiInputBase-root": { minHeight: CONTROL_MIN_HEIGHT } }}
+          >
+            <option value=""></option>
+            <option value="publication_year">Publication Year</option>
+            <option value="publication_year_range">Publication Year Range</option>
+            <option value="author_full_name">Author Full Name</option>
+            <option value="author_given_name">Author Given Name</option>
+            <option value="author_family_name">Author Family Name</option>
+            <option value="title">Title</option>
+            <option value="venue">Venue</option>
+            <option value="doi">DOI</option>
+            <option value="abstract_parsed">Abstract Parsed</option>
+            <option value="fullbody_parsed">Fullbody Parsed</option>
+          </TextField>
 
-        {/* Condition */}
-        {(needsIsIsNot || needsIncludesExcludes) && (
-          <Box sx={{ minWidth: 160, flex: "0 1 160px" }}>
-            <FormControl fullWidth size={CONTROL_SIZE} sx={controlSx}>
-              <InputLabel id={`cond-${id}`}>Condition</InputLabel>
-              <Select
-                labelId={`cond-${id}`}
-                value={condition}
-                label="Condition"
-                onChange={handleConditionChange}
-              >
-                {needsIsIsNot ? (
-                  <>
-                    <MenuItem value="true">IS</MenuItem>
-                    <MenuItem value="false">IS NOT</MenuItem>
-                  </>
-                ) : (
-                  <>
-                    <MenuItem value="true">INCLUDES</MenuItem>
-                    <MenuItem value="false">EXCLUDES</MenuItem>
-                  </>
-                )}
-              </Select>
-            </FormControl>
-          </Box>
-        )}
-
-        {/* Boolean radio */}
-        {needsBool && (
-          <Box sx={{ flex: "0 1 auto" }}>
-            <FormControl size={CONTROL_SIZE}>
-              <RadioGroup
-                row
-                name={`include-${id}`}
-                value={condition}
-                onChange={(e) =>
-                  updateAdvancedFilter(id, "condition", (e.target as HTMLInputElement).value)
-                }
-              >
-                <FormControlLabel value="true" control={<Radio size="small" />} label="True" />
-                <FormControlLabel value="false" control={<Radio size="small" />} label="False" />
-              </RadioGroup>
-            </FormControl>
-          </Box>
-        )}
-
-        {/* Values */}
-        {needsValuesChips && (
-          <Box sx={{ minWidth: 220, flex: "1 1 300px" }}>
-            <Autocomplete
-              multiple
-              freeSolo
-              options={[]}
-              value={values}
-              onChange={handleValuesChange}
-              clearIcon={false}
-              fullWidth
-              size={CONTROL_SIZE}
-              sx={controlSx}
-              renderTags={(value, getTagProps) =>
-                value.map((option: string, index: number) => (
-                  <Chip key={option} label={option} variant="outlined" {...getTagProps({ index })} />
-                ))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size={CONTROL_SIZE}
-                  label="Values"
-                  placeholder="Type and press Enter"
-                />
-              )}
-            />
-          </Box>
-        )}
-
-        {/* Remove button */}
-        <Box sx={{ flex: "0 0 auto" }}>
           <IconButton
             aria-label="Remove filter"
             size="small"
             onClick={() => closeFilter(id)}
-            sx={{ width: 32, height: 32, borderRadius: "50%" }}
+            sx={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0 }}
           >
             <CloseIcon fontSize="inherit" />
           </IconButton>
         </Box>
-      </Stack>
 
-      {/* Year range slider */}
-      {filterType === "publication_year_range" && (
-        <Box sx={{ mt: SPACING }}>
-          <Slider
-            value={sliderValues}
-            onChange={handleValuesChange}
-            valueLabelDisplay="auto"
-            min={MIN}
-            max={MAX}
-            step={1}
+        {/* Row 2: condition select or boolean radio */}
+        {(needsIsIsNot || needsIncludesExcludes) && (
+          <TextField
+            select
+            SelectProps={{ native: true }}
+            label="Condition"
+            value={condition}
+            onChange={onConditionChange}
+            size="medium"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            sx={{ "& .MuiInputBase-root": { minHeight: CONTROL_MIN_HEIGHT } }}
+          >
+            <option value=""></option>
+            {needsIsIsNot ? (
+              <>
+                <option value="true">IS</option>
+                <option value="false">IS NOT</option>
+              </>
+            ) : (
+              <>
+                <option value="true">INCLUDES</option>
+                <option value="false">EXCLUDES</option>
+              </>
+            )}
+          </TextField>
+        )}
+
+        {needsBool && (
+          <FormControl
+            component="fieldset"
+            sx={{
+              minHeight: CONTROL_MIN_HEIGHT,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <RadioGroup row value={condition} onChange={onBooleanChange}>
+              <FormControlLabel value="true" control={<Radio />} label="True" />
+              <FormControlLabel value="false" control={<Radio />} label="False" />
+            </RadioGroup>
+          </FormControl>
+        )}
+
+        {/* Row 3: values as chips */}
+        {showChips && (
+          <Autocomplete
+            multiple
+            freeSolo
+            options={[]}
+            value={Array.isArray(values) ? values : []}
+            onChange={onValuesChipsChange}
+            clearIcon={false}
+            fullWidth
+            renderTags={(vals: readonly string[], getTagProps) =>
+              vals.map((option: string, index: number) => (
+                <Chip
+                  key={option}
+                  label={option}
+                  variant="outlined"
+                  {...getTagProps({ index })}
+                />
+              ))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="medium"
+                label="Values"
+                placeholder="Type and press Enter"
+                InputLabelProps={{ shrink: true }}
+                sx={{ "& .MuiInputBase-root": { minHeight: CONTROL_MIN_HEIGHT } }}
+              />
+            )}
           />
-        </Box>
-      )}
+        )}
+
+        {/* Row 4: sliders */}
+        {filterType === "publication_year" && (
+          <Box sx={{ px: 1 }}>
+            <Slider
+              value={singleYear}
+              onChange={onSingleYearChange}
+              valueLabelDisplay="auto"
+              min={MIN_YEAR}
+              max={MAX_YEAR}
+              step={1}
+            />
+          </Box>
+        )}
+
+        {filterType === "publication_year_range" && (
+          <Box sx={{ px: 1 }}>
+            <Slider
+              value={range}
+              onChange={onRangeChange}
+              valueLabelDisplay="auto"
+              min={MIN_YEAR}
+              max={MAX_YEAR}
+              step={1}
+            />
+          </Box>
+        )}
+      </Stack>
     </Box>
   );
-};
-
-export default AdvancedFilter;
+}
