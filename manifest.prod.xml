@@ -120,7 +120,7 @@
             <bt:ShortStrings>
                 <bt:String id="GetStarted.Title" DefaultValue="Get started with Endoc!"/>
                 <bt:String id="Research.Label" DefaultValue="Research"/>
-                <bt:String id="TaskpaneButton.Label" DefaultValue="Open Endoc"/>
+                <bt:String id="TaskpaneButton.Label" DefaultValue="Endoc"/>
 
                 <bt:String id="residLabel" DefaultValue="Endoc" />
                 <bt:String id="residLabel2" DefaultValue="Semantic Search" />

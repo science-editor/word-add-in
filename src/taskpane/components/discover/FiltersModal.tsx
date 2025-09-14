@@ -14,8 +14,6 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import AdvancedFilter from "../AdvancedFilter";
 import { AdvancedFilterState } from "../../types";
 
-const CONTROL_MIN_HEIGHT = 48; // match Discover controls
-
 export function FiltersModal({
   open,
   onClose,
@@ -52,13 +50,13 @@ export function FiltersModal({
         {filters.length === 0 ? (
           <Box
             sx={{
-              minHeight: 160,
+              minHeight: 140,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              gap: 2,
+              gap: 1,
               color: "text.secondary",
             }}
           >
@@ -68,19 +66,6 @@ export function FiltersModal({
             <Typography variant="body2" sx={{ maxWidth: 280 }}>
               Use filters to narrow down your search results. You can add multiple filters and combine them for precise control.
             </Typography>
-            <Button
-              variant="outlined"
-              startIcon={<AddBoxIcon />}
-              onClick={onAdd}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                borderColor: "primary.main",
-                color: "primary.main",
-              }}
-            >
-              Add your first filter
-            </Button>
           </Box>
         ) : (
           <Stack spacing={2}>

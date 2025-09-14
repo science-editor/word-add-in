@@ -66,11 +66,11 @@ export function DiscoverScreen({
           You need to connect Endoc with an API key before searching.
           <Box sx={{ mt: 1 }}>
             <Button
-              color="inherit"
-              size="medium"
+              variant="outlined"
+              color="warning"
               fullWidth
               onClick={goToSettings}
-              sx={{ minHeight: CONTROL_MIN_HEIGHT, textTransform: "none", fontWeight: 600 }}
+              sx={{ textTransform: "none", fontWeight: 600 }}
             >
               Go to Settings
             </Button>

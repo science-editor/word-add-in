@@ -23,8 +23,7 @@ type Props = {
   updateAdvancedFilter: (id: string, key: string, val: any) => void;
 };
 
-/** Match Discover screen spacing & heights */
-const PAD = 2; // same as Discover
+const PAD = 2; 
 const CONTROL_MIN_HEIGHT = 48;
 const MIN_YEAR = 1940;
 const MAX_YEAR = new Date().getFullYear();
@@ -47,7 +46,6 @@ export default function AdvancedFilter({
       ? (values[0] as number)
       : MAX_YEAR;
 
-  // Handlers — use HTMLInputElement to satisfy MUI TextField(select) typing
   const onTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const next = e.target.value;
     updateAdvancedFilter(id, "filterType", next);
@@ -112,19 +110,18 @@ export default function AdvancedFilter({
         width: "100%",
       }}
     >
-      {/* spacing == PAD to match Discover’s vertical rhythm */}
       <Stack spacing={PAD}>
-        {/* Row 1: selector + close */}
+        {/* Row 1: Filter type select + close button */}
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <TextField
             select
             SelectProps={{ native: true }}
-            label="Advanced Filter"
+            label="Filter By"
             value={filterType}
             onChange={onTypeChange}
             size="medium"
             fullWidth
-            InputLabelProps={{ shrink: true }} // label always visible
+            InputLabelProps={{ shrink: true }}
             sx={{ "& .MuiInputBase-root": { minHeight: CONTROL_MIN_HEIGHT } }}
           >
             <option value=""></option>
@@ -150,7 +147,7 @@ export default function AdvancedFilter({
           </IconButton>
         </Box>
 
-        {/* Row 2: condition select or boolean radio */}
+        {/* Row 2: Condition */}
         {(needsIsIsNot || needsIncludesExcludes) && (
           <TextField
             select
@@ -194,7 +191,7 @@ export default function AdvancedFilter({
           </FormControl>
         )}
 
-        {/* Row 3: values as chips */}
+        {/* Row 3: Values */}
         {showChips && (
           <Autocomplete
             multiple
@@ -219,7 +216,7 @@ export default function AdvancedFilter({
                 {...params}
                 size="medium"
                 label="Values"
-                placeholder="Type and press Enter"
+                placeholder="Value OR Values"
                 InputLabelProps={{ shrink: true }}
                 sx={{ "& .MuiInputBase-root": { minHeight: CONTROL_MIN_HEIGHT } }}
               />
@@ -227,7 +224,7 @@ export default function AdvancedFilter({
           />
         )}
 
-        {/* Row 4: sliders */}
+        {/* Row 4: Sliders */}
         {filterType === "publication_year" && (
           <Box sx={{ px: 1 }}>
             <Slider

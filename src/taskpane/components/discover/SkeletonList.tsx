@@ -18,49 +18,31 @@ export function SkeletonList({ rows = 6 }: { rows?: number }) {
             borderRadius: 1.5,
           }}
         >
-          {/* Match SearchResultsPanel layout: left content + right icon column */}
+          {/* Match SearchResultsPanel: grid with left content + right single icon, vertically centered */}
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr auto", sm: "1fr auto" },
+              gridTemplateColumns: "1fr auto",
               columnGap: 2,
-              rowGap: 1,
-              alignItems: "start",
+              alignItems: "center", // center right icon vertically (and left block baseline nicely)
             }}
           >
-            {/* Left: title, meta, snippet */}
+            {/* Left: title + meta */}
             <Box sx={{ minWidth: 0 }}>
-              {/* Title (allow 1–2 lines of varying width for realism) */}
+              {/* Title (simulate 1–2 lines) */}
               <Skeleton variant="text" animation="wave" height={22} sx={{ width: "85%" }} />
               <Skeleton variant="text" animation="wave" height={22} sx={{ width: "60%" }} />
 
-              {/* Meta line (single row look) */}
+              {/* Meta line (single row look with dot-separated feel) */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
                 <Skeleton variant="text" animation="wave" height={16} sx={{ width: "28%" }} />
                 <Skeleton variant="text" animation="wave" height={16} sx={{ width: "18%" }} />
                 <Skeleton variant="text" animation="wave" height={16} sx={{ width: "10%" }} />
               </Box>
-
-              {/* Abstract / snippet block */}
-              <Skeleton
-                variant="rectangular"
-                animation="wave"
-                height={56}
-                sx={{ mt: 1, borderRadius: 1 }}
-              />
             </Box>
 
-            {/* Right: action buttons column (same size/positions as real icons) */}
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
-                alignItems: "flex-end",
-                justifySelf: "end",
-              }}
-            >
-              <Skeleton variant="circular" width={32} height={32} />
+            {/* Right: single action icon placeholder (same size as real button) */}
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
               <Skeleton variant="circular" width={32} height={32} />
             </Box>
           </Box>
