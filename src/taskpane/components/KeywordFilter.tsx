@@ -104,7 +104,7 @@ export default function KeywordFilter({
           {...params}
           variant="outlined"
           size="medium"
-          label="Keyword filter"
+          label="Keyword Filter"
           placeholder={selectedKeywords.length > 0 ? "" : "Constrain your search with keywords"}
           // keep label small & static
           InputLabelProps={{ shrink: true }}

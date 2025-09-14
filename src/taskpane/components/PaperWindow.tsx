@@ -24,6 +24,7 @@ const ZOTERO_ICON_URL =
 const RHYTHM = 1.25;
 // Tighter horizontal gap between chips when side-by-side
 const H_GAP = 0.75;
+const CONTROL_MIN_HEIGHT = 48;
 
 type Props = {
   expandedPaper: any | null;
@@ -114,6 +115,7 @@ export default function PaperWindow({
               size="small"
               startIcon={<CheckCircleIcon sx={{ color: "success.main" }} />}
               sx={{
+                height: CONTROL_MIN_HEIGHT,
                 alignSelf: "flex-start",
                 textTransform: "none",
                 fontWeight: 600,
@@ -147,6 +149,7 @@ export default function PaperWindow({
                 )
               }
               sx={{
+                height: CONTROL_MIN_HEIGHT,
                 alignSelf: "flex-start",
                 textTransform: "none",
                 fontWeight: 600,

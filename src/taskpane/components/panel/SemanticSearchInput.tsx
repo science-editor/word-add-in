@@ -26,7 +26,7 @@ export function SemanticSearchInput({
   return (
     <TextField
       id="semantic-search"
-      label="Semantic search"
+      label="Semantic Search"
       placeholder="Type a natural-language query…"
       fullWidth
       size="medium"

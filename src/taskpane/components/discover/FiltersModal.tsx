@@ -14,6 +14,8 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import AdvancedFilter from "../AdvancedFilter";
 import { AdvancedFilterState } from "../../types";
 
+const CONTROL_MIN_HEIGHT = 48;
+
 export function FiltersModal({
   open,
   onClose,
@@ -107,9 +109,10 @@ export function FiltersModal({
             fontWeight: 600,
             borderColor: "primary.main",
             color: "primary.main",
+            height: CONTROL_MIN_HEIGHT
           }}
         >
-          Add filter
+          Add Filter
         </Button>
 
         <Button
@@ -118,6 +121,7 @@ export function FiltersModal({
           sx={{
             textTransform: "none",
             fontWeight: 600,
+            height: CONTROL_MIN_HEIGHT
           }}
         >
           Done

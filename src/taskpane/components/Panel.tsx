@@ -13,7 +13,6 @@ import { useEndocApi } from "../hooks/useEndocApi";
 import { AdvancedFilterState, Paper } from "../types";
 import { initialAdvancedFilter } from "../utils/filters";
 
-/** Match App.tsx logic for GraphQL URL */
 const isLocalDev =
   typeof window !== "undefined" && /^https:\/\/localhost:\d+$/i.test(window.location.origin);
 const GRAPHQL_URL = isLocalDev
@@ -49,7 +48,7 @@ export default function Panel({
       localStorage.setItem(ONBOARDING_DISMISSED_KEY, "1");
     } catch {}
     setOnboardingDismissed(true);
-    setTab("settings"); // guide straight to Settings
+    setTab("settings");
   }, []);
 
   // Search state

@@ -16,6 +16,13 @@ import App from "./components/App";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
+// ✅ correct path (file is under components/)
+import {
+  ThemeControllerProvider,
+  useThemeController,
+  ThemeChoice,
+} from "./components/themeController";
+
 /* global document, Office, module, require, HTMLElement */
 
 const rootElement: HTMLElement | null = document.getElementById("container");
@@ -34,27 +41,26 @@ function detectInitialMode(): ColorMode {
   return "light";
 }
 
-function Index(): JSX.Element {
-  const [mode, setMode] = React.useState<ColorMode>(detectInitialMode());
+/** Inner wire-up: follow System/Light/Dark selection and provide both MUI + Fluent themes. */
+function ThemeRoot(): JSX.Element {
+  const { themeChoice } = useThemeController(); // "system" | "light" | "dark"
+  const [systemMode, setSystemMode] = React.useState<ColorMode>(detectInitialMode());
 
-  // Listen for OS theme changes (make return type explicit for TS)
+  // Only listen when following system
   React.useEffect((): void | (() => void) => {
+    if (themeChoice !== "system") return;
+
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return; // void
+      return;
     }
-
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => setMode(e.matches ? "dark" : "light");
+    const handler = (e: MediaQueryListEvent) => setSystemMode(e.matches ? "dark" : "light");
 
-    // Modern browsers
     if (typeof mql.addEventListener === "function") {
       mql.addEventListener("change", handler);
-      return () => {
-        mql.removeEventListener("change", handler);
-      };
+      return () => mql.removeEventListener("change", handler);
     }
-
-    // Fallback (older Safari types)
+    // Safari legacy fallback
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (typeof mql.addListener === "function") {
@@ -67,10 +73,11 @@ function Index(): JSX.Element {
         mql.removeListener(handler);
       };
     }
-
-    // If neither API exists, do nothing (void)
     return;
-  }, []);
+  }, [themeChoice]);
+
+  const mode: ColorMode =
+    themeChoice === "system" ? systemMode : (themeChoice as Exclude<ThemeChoice, "system">);
 
   const muiTheme = React.useMemo(() => makeMuiTheme(mode), [mode]);
   const fluentTheme = mode === "dark" ? webDarkTheme : webLightTheme;
@@ -92,6 +99,14 @@ function Index(): JSX.Element {
         />
       </ThemeProvider>
     </FluentProvider>
+  );
+}
+
+function Index(): JSX.Element {
+  return (
+    <ThemeControllerProvider>
+      <ThemeRoot />
+    </ThemeControllerProvider>
   );
 }
 
