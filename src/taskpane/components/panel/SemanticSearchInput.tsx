@@ -44,15 +44,6 @@ export function SemanticSearchInput({
         isShort ? "Tip: ~5+ words can improve results (optional)." : undefined
       }
       FormHelperTextProps={{ sx: { mt: 0.5, lineHeight: 1.2 } }}
-      InputProps={{
-        endAdornment: isShort ? (
-          <InputAdornment position="end">
-            <Tooltip title="Longer queries often improve relevance, but it’s optional.">
-              <TipsAndUpdatesOutlinedIcon fontSize="small" sx={{ opacity: 0.85 }} />
-            </Tooltip>
-          </InputAdornment>
-        ) : undefined,
-      }}
     />
   );
 }

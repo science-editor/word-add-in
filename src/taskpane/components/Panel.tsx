@@ -6,7 +6,7 @@ import Box from "@mui/material/Box";
 import { TabbedShell, TabKey } from "./shell/TabbedShell";
 import Onboarding from "./Onboarding";
 import { DiscoverScreen } from "./discover/DiscoverScreen";
-import { SettingsScreen } from "./settings/SettingsScreen";
+import SettingsScreen from "./settings/SettingsScreen";
 import PaperWindow from "./PaperWindow";
 
 import { useEndocApi } from "../hooks/useEndocApi";
@@ -215,10 +215,6 @@ export default function Panel({
             onValidate={validateKey}
             busy={checkBusy}
             problem={keyProblem}
-            onResetOnboarding={() => {
-              localStorage.removeItem(ONBOARDING_DISMISSED_KEY);
-              toast.info("Onboarding will show next time you open the add-in.");
-            }}
           />
         )}
       </TabbedShell>

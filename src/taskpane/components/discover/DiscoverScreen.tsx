@@ -1,4 +1,3 @@
-// src/taskpane/components/discover/DiscoverScreen.tsx
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -15,6 +14,7 @@ import SearchResultsPanel from "../SearchResultsPanel";
 import { AdvancedFilterState, Paper as PaperType } from "../../types";
 import { SkeletonList } from "./SkeletonList";
 import { FiltersModal } from "./FiltersModal";
+import QuickSearch from "../QuickSearch";
 
 const PAD = 2;
 const CONTROL_MIN_HEIGHT = 48;
@@ -61,21 +61,25 @@ export function DiscoverScreen({
   onAddToZotero: (p: PaperType) => void;
 }) {
   const [filtersOpen, setFiltersOpen] = React.useState(false);
+  const [hasSearched, setHasSearched] = React.useState(false);
 
   const hasResults = Boolean(results && results.length > 0);
-  const showEmpty = !loading && !hasResults;
+
+  const handleSearch = React.useCallback(
+    (term?: string) => {
+      const q = typeof term === "string" ? term : searchTerm;
+      if (!q?.trim()) return;
+      setHasSearched(true);
+      onRunSearch(q);
+    },
+    [onRunSearch, searchTerm]
+  );
+
+  const showEmpty = hasSearched && !loading && !hasResults;
 
   return (
-      <Box
-        sx={{
-          pt: 1,
-          px: PAD,
-          pb: PAD,
-          maxWidth: 780,
-          mx: "auto",
-        }}
-      >
-      {/* No API key — warning card with warning background */}
+    <Box sx={{ p: PAD, maxWidth: 780, mx: "auto" }}>
+      {/* No API key — warning card */}
       {!apiKeyPresent && (
         <Box sx={{ mt: PAD + 1, mb: PAD + 1 }}>
           <Paper
@@ -135,6 +139,11 @@ export function DiscoverScreen({
 
       {/* Controls */}
       <Box sx={{ display: "grid", gap: PAD }}>
+        {/* QuickSearch at top-left */}
+        <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+          <QuickSearch setSearchTerm={setSearchTerm} onRunSearch={(t) => handleSearch(t)} />
+        </Box>
+
         <SemanticSearchInput
           value={searchTerm}
           onChange={(v) => setSearchTerm(v)}
@@ -145,6 +154,24 @@ export function DiscoverScreen({
 
         <KeywordFilter selectedKeywords={keywords} onKeywordsChange={setKeywords} />
 
+        {/* Search Button (full-width contained primary) */}
+        <Button
+          onClick={() => handleSearch()}
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={!apiKeyPresent || !searchTerm?.trim() || loading}
+          startIcon={!loading ? <ManageSearchOutlinedIcon /> : undefined}
+          sx={{
+            height: CONTROL_MIN_HEIGHT,
+            textTransform: "none",
+            fontWeight: 700,
+          }}
+        >
+          {loading ? <CircularProgress size={18} /> : "Search"}
+        </Button>
+
+        {/* Advanced Filters link */}
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button
             onClick={() => setFiltersOpen(true)}
@@ -174,23 +201,6 @@ export function DiscoverScreen({
             {advancedFilters.length ? ` (${advancedFilters.length})` : ""}
           </Button>
         </Box>
-
-        <Button
-          variant="contained"
-          onClick={() => onRunSearch(searchTerm)}
-          disabled={!apiKeyPresent || loading || !searchTerm}
-          startIcon={
-            loading ? <CircularProgress size={18} color="inherit" sx={{ mr: -0.5 }} /> : null
-          }
-          sx={{
-            height: CONTROL_MIN_HEIGHT,
-            width: "100%",
-            textTransform: "none",
-            fontWeight: 600,
-          }}
-        >
-          {loading ? "Searching…" : "Search"}
-        </Button>
       </Box>
 
       {/* Results area */}
@@ -254,8 +264,8 @@ export function DiscoverScreen({
               <Button
                 variant="text"
                 size="medium"
-                onClick={() => onRunSearch(searchTerm)}
-                disabled={!apiKeyPresent || !searchTerm}
+                onClick={() => handleSearch()}
+                disabled={!apiKeyPresent || !searchTerm?.trim()}
                 sx={{ textTransform: "none", fontWeight: 600 }}
               >
                 Retry Search

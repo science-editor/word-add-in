@@ -1,17 +1,18 @@
-// Libraries
+// src/taskpane/components/TutotrialWindow.tsx
 import * as React from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import TextField from "@mui/material/TextField";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
+  Typography,
+  Stack,
+  TextField,
+  Link,
+  Divider,
+} from "@mui/material";
 
 type CloseReason =
   | "backdropClick"
@@ -28,7 +29,9 @@ interface TutorialWindowProps {
   handleApiKeyChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-function TutorialWindow({
+const CONTROL_MIN_HEIGHT = 48;
+
+export default function TutorialWindow({
   showTutorialWindow,
   closeTutorialWindow,
   apiKey,
@@ -37,192 +40,191 @@ function TutorialWindow({
   const endocURL = "https://endoc.ethz.ch/";
   const zoteroDownloadURL = "https://www.zotero.org/download/";
 
+  // Shared image style
+  const imgSx = {
+    borderRadius: 1,
+    boxShadow: (t: any) =>
+      t.palette.mode === "dark" ? "0 2px 10px rgba(0,0,0,0.6)" : "0 2px 10px rgba(0,0,0,0.12)",
+    maxWidth: "100%",
+    height: "auto",
+    display: "block",
+  };
+
   return (
     <Dialog
       open={Boolean(showTutorialWindow)}
-      // Forward MUI's reason so the parent can treat *any* dismissal as onboarding complete
       onClose={(_evt, reason) => closeTutorialWindow(reason as CloseReason)}
       fullWidth
       maxWidth="md"
-      scroll="body"
+      scroll="paper"
+      PaperProps={{
+        elevation: 0,
+        sx: {
+          border: (t) => `1px solid ${t.palette.divider}`,
+          borderRadius: 1.5,
+        },
+      }}
     >
-      <DialogActions>
-        <IconButton
-          aria-label="Close tutorial"
-          size="medium"
-          sx={{ width: 32, height: 32, borderRadius: "50%" }}
-          // Explicit reason when user clicks the X
-          onClick={() => closeTutorialWindow("iconButton")}
-        >
-          <CloseIcon fontSize="inherit" />
-        </IconButton>
-      </DialogActions>
+      {/* Title matches Advanced Filters modal style */}
+      <DialogTitle sx={{ fontWeight: 700 }}>Set up your Word Add-in</DialogTitle>
 
-      <DialogTitle sx={{ fontWeight: "bold" }}>
-        Set up your Word Add-in
-      </DialogTitle>
+      {/* Body with section dividers for clarity & consistency */}
+      <DialogContent dividers sx={{ pt: 2 }}>
+        {/* Section: Get your API key */}
+        <Stack spacing={1.5}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Get your API key
+          </Typography>
 
-      <DialogContent dividers>
-        <Typography variant="h6" gutterBottom>
-          Get your API key
-        </Typography>
-        <List sx={{ mb: 3 }}>
-          <ListItem disableGutters>
-            <ListItemText
-              primary={
-                <>
-                  1. Create a free{" "}
-                  <Link
-                    href={endocURL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ cursor: "pointer" }}
-                  >
-                    Endoc
-                  </Link>{" "}
-                  account or log in to your existing one.
-                </>
-              }
-            />
-          </ListItem>
-          <ListItem disableGutters>
-            <ListItemText primary="2. Go to Account Settings, and generate a new API Key or use an existing one." />
-          </ListItem>
+          <Typography variant="body2" color="text.secondary">
+            1. Create a free{" "}
+            <Link href={endocURL} target="_blank" rel="noopener noreferrer">
+              Endoc
+            </Link>{" "}
+            account or log in to your existing one.
+          </Typography>
 
-          <div style={{ display: "flex", marginBottom: "20px" }}>
-            <img
+          <Typography variant="body2" color="text.secondary">
+            2. Go to <strong>Account Settings</strong>, and generate a new API key or use an existing
+            one.
+          </Typography>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+              gap: 2,
+              mt: 0.5,
+            }}
+          >
+            <Box component="img"
               src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_account_settings.png"
               alt="Account Settings"
-              height={200}
-              style={{
-                marginRight: "40px",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                borderRadius: "4px",
-              }}
+              sx={imgSx}
             />
-            <img
+            <Box component="img"
               src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_api_key.png"
-              alt="Get API Key"
-              height={200}
-              style={{
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                borderRadius: "4px",
-              }}
+              alt="Generate API Key"
+              sx={imgSx}
             />
-          </div>
+          </Box>
 
-          <ListItem
-            disableGutters
-            sx={{ display: "flex", alignItems: "center", py: 1 }}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1.5}
+            alignItems={{ xs: "stretch", sm: "center" }}
+            sx={{ pt: 0.5 }}
           >
-            <ListItemText primary="3. Save your key:" sx={{ flex: "0 0 auto" }} />
+            <Typography variant="body2" sx={{ minWidth: { sm: 130 }, fontWeight: 500 }}>
+              3. Save your key:
+            </Typography>
             <TextField
               value={apiKey}
               onChange={handleApiKeyChange}
               placeholder="Enter your Endoc API key…"
-              variant="outlined"
-              size="small"
-              sx={{ ml: 1, flex: "0 0 auto", width: 300 }}
+              size="medium"
+              fullWidth
+              InputLabelProps={{ shrink: false }}
+              sx={{ "& .MuiInputBase-root": { height: CONTROL_MIN_HEIGHT } }}
             />
-          </ListItem>
-        </List>
+          </Stack>
+        </Stack>
 
-        <hr className="divider" />
+        <Divider sx={{ my: 2 }} />
 
-        <Typography variant="h6" gutterBottom>
-          Connect to Zotero
-        </Typography>
-        <List>
-          <ListItem disableGutters>
-            <ListItemText
-              primary={
-                <>
-                  1. Go to{" "}
-                  <Link
-                    href={endocURL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ cursor: "pointer" }}
-                  >
-                    Endoc
-                  </Link>{" "}
-                  and navigate to your Account Settings.
-                </>
-              }
-            />
-          </ListItem>
-          <ListItem disableGutters>
-            <ListItemText primary="2. Connect your Zotero Account to Endoc." />
-          </ListItem>
-          <img
+        {/* Section: Connect to Zotero */}
+        <Stack spacing={1.5}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Connect to Zotero
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary">
+            1. Go to{" "}
+            <Link href={endocURL} target="_blank" rel="noopener noreferrer">
+              Endoc
+            </Link>{" "}
+            and navigate to your <strong>Account Settings</strong>.
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary">
+            2. Connect your Zotero account to Endoc.
+          </Typography>
+
+          <Box
+            component="img"
             src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_zotero.png"
             alt="Connect to Zotero"
-            height={160}
-            style={{
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-              borderRadius: "4px",
-            }}
+            sx={{ ...imgSx, maxWidth: 520 }}
           />
-          <ListItem disableGutters>
-            <ListItemText primary="3. You will now be able to add papers to your Zotero collection directly through the Word add-in." />
-          </ListItem>
-        </List>
 
-        <hr className="divider" />
+          <Typography variant="body2" color="text.secondary">
+            3. You can now add papers to your Zotero collection directly from the Word add-in.
+          </Typography>
+        </Stack>
 
-        <Typography variant="h6" gutterBottom>
-          Access your Endoc Zotero collection
-        </Typography>
-        <List>
-          <ListItem disableGutters>
-            <ListItemText
-              primary={
-                <>
-                  1. If you haven't already, install{" "}
-                  <Link
-                    href={zoteroDownloadURL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ cursor: "pointer" }}
-                  >
-                    Zotero
-                  </Link>
-                  . It comes with the Zotero Word plugin.
-                </>
-              }
-            />
-          </ListItem>
-          <ListItem disableGutters>
-            <ListItemText primary="2. Open the Zotero application on your computer." />
-          </ListItem>
-          <ListItem disableGutters>
-            <ListItemText primary="3. In Word, navigate to the Zotero tab, then click 'Add/Edit Citation'." />
-          </ListItem>
-          <img
+        <Divider sx={{ my: 2 }} />
+
+        {/* Section: Access your Endoc Zotero collection */}
+        <Stack spacing={1.5}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Access your Endoc Zotero collection
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary">
+            1. If you haven’t already, install{" "}
+            <Link href={zoteroDownloadURL} target="_blank" rel="noopener noreferrer">
+              Zotero
+            </Link>
+            . It comes with the Zotero Word plugin.
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary">
+            2. Open the Zotero application on your computer.
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary">
+            3. In Word, go to the <strong>Zotero</strong> tab and click <strong>Add/Edit Citation</strong>.
+          </Typography>
+
+          <Box
+            component="img"
             src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_zotero_plugin.png"
-            alt="Find Zotero in Word"
-            height={160}
-            style={{
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-              borderRadius: "4px",
-            }}
+            alt="Zotero in Word"
+            sx={{ ...imgSx, maxWidth: 520 }}
           />
-          <ListItem disableGutters>
-            <ListItemText primary="4. Select one of the papers in your Endoc Word Add-In collection to cite it in your document." />
-          </ListItem>
-          <img
+
+          <Typography variant="body2" color="text.secondary">
+            4. Select one of the papers in your Endoc Word Add-in collection to cite it in your document.
+          </Typography>
+
+          <Box
+            component="img"
             src="https://raw.githubusercontent.com/science-editor/word-add-in/main/assets/tutorial_zotero_collection.png"
-            alt="Cite paper from Zotero collection"
-            height={320}
-            style={{
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-              borderRadius: "4px",
-            }}
+            alt="Cite from Zotero collection"
+            sx={{ ...imgSx, maxWidth: 720 }}
           />
-        </List>
+        </Stack>
       </DialogContent>
+
+      {/* Bottom action row, same rhythm/height as FiltersModal */}
+      <DialogActions
+        sx={{
+          px: 2,
+          py: 1.5,
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <Button
+          onClick={() => closeTutorialWindow("programmatic")}
+          variant="contained"
+          sx={{ textTransform: "none", fontWeight: 600, height: CONTROL_MIN_HEIGHT }}
+        >
+          Done
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }
-
-export default TutorialWindow;

@@ -1,29 +1,45 @@
+// src/taskpane/components/panel/HeaderBar.tsx
 import * as React from "react";
-import IconButton from "@mui/material/IconButton";
-import SettingsIcon from "@mui/icons-material/Settings";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import QuickSearch from "../QuickSearch";
 
-export function HeaderBar({
-  apiKey,
-  onOpenSettings,
-  onQuickSearch,
-}: {
-  apiKey: string;
-  onOpenSettings: () => void;
-  onQuickSearch: (text: string) => void;
-}) {
+type Props = {
+  title?: string;
+  /** Updates the semantic search input */
+  setSearchTerm: (t: string) => void;
+  /** Triggers the actual search */
+  onRunSearch: (t: string) => void;
+  /** Optional right-side custom content (appears left of QuickSearch) */
+  rightExtra?: React.ReactNode;
+};
+
+export default function HeaderBar({
+  title = "Discover",
+  setSearchTerm,
+  onRunSearch,
+  rightExtra,
+}: Props) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <QuickSearch setSearchTerm={onQuickSearch as any} handleClickSearchBtn={onQuickSearch} />
-      <IconButton
-        className={apiKey ? "" : "attention-pulse"}
-        aria-label="Endoc API Key help"
-        size="medium"
-        sx={{ width: 32, height: 32, borderRadius: "50%" }}
-        onClick={onOpenSettings}
-      >
-        <SettingsIcon fontSize="inherit" />
-      </IconButton>
-    </div>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 1,
+        px: 2,
+        pt: 1,
+        pb: 1,
+      }}
+    >
+      <Typography variant="h6" sx={{ fontWeight: 700, m: 0 }}>
+        {title}
+      </Typography>
+
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {rightExtra}
+        <QuickSearch setSearchTerm={setSearchTerm} onRunSearch={onRunSearch} />
+      </Box>
+    </Box>
   );
 }

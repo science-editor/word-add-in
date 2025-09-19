@@ -1,64 +1,53 @@
-// Libraries
-import React from "react";
-import { Button } from "@mui/material";
-import DocumentScannerOutlinedIcon from '@mui/icons-material/DocumentScannerOutlined';
-import Typography from "@mui/material/Typography";
+// src/taskpane/components/QuickSearch.tsx
+import * as React from "react";
+import { Button, Tooltip } from "@mui/material";
+import DocumentScannerOutlinedIcon from "@mui/icons-material/DocumentScannerOutlined";
 
- function QuickSearch( { setSearchTerm, handleClickSearchBtn }) {
-    const getDocumentText = async () => {
-        try {
-            await Word.run(async (context) => {
-                const body = context.document.body;
-                body.load("text");
-                await context.sync();
-                if (body.text) {
-                    setSearchTerm(body.text);
-                    handleClickSearchBtn(body.text)
-                }
-            });
-        } catch (error) {
-            console.error("Error reading document:", error);
+type Props = {
+  setSearchTerm: (t: string) => void;
+  onRunSearch: (t: string) => void;
+};
+
+const CONTROL_MIN_HEIGHT = 48;
+
+export default function QuickSearch({ setSearchTerm, onRunSearch }: Props) {
+  const getDocumentText = async () => {
+    try {
+      await Word.run(async (context) => {
+        const body = context.document.body;
+        body.load("text");
+        await context.sync();
+        const text = (body.text || "").trim();
+        if (text) {
+          setSearchTerm(text);
+          onRunSearch(text);
         }
-    };
+      });
+    } catch (error) {
+      // Non-fatal UX: fail silently; console for devs
+      // eslint-disable-next-line no-console
+      console.error("QuickSearch: failed to read document text", error);
+    }
+  };
 
-    return (
+  return (
+    <Tooltip title="Use the current document text as your search query">
+      <span>
         <Button
-            variant="outlined"
-            startIcon={
-                <DocumentScannerOutlinedIcon
-                    sx={{
-                        fontSize: 'medium !important',
-                        display: 'inline-flex',
-                        color: 'text.primary',
-                    }}
-                />
-            }
-            sx={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                height: '24px',
-                minHeight: '24px',
-                px: 1,
-                color: "text.primary",
-                borderColor: "text.primary",
-            }}
-            onClick={getDocumentText}
+          variant="outlined"
+          size="medium"
+          startIcon={<DocumentScannerOutlinedIcon />}
+          onClick={getDocumentText}
+          sx={{
+            height: CONTROL_MIN_HEIGHT,
+            textTransform: "none",
+            fontWeight: 600,
+            alignSelf: "flex-start",
+          }}
         >
-            <Typography
-                variant="inherit"
-                sx={{
-                    fontSize: '10px',
-                    lineHeight: '24px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    color: "text.primary"
-                }}
-            >
-                Quick search
-            </Typography>
+          Quick search
         </Button>
-    );
+      </span>
+    </Tooltip>
+  );
 }
-
-export default QuickSearch;
