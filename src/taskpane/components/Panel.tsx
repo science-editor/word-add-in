@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { toast } from "react-toastify";
 
 import Box from "@mui/material/Box";
 import { TabbedShell, TabKey } from "./shell/TabbedShell";
@@ -92,7 +91,6 @@ export default function Panel({
         setFoundPapers(papers);
       } catch (err: any) {
         console.error(err);
-        toast.error(err?.message || "Failed to retrieve papers.");
       } finally {
         setLoading(false);
       }
@@ -107,7 +105,7 @@ export default function Panel({
         const enriched = await loadPaperContent(paper);
         setExpandedPaper(enriched);
       } catch {
-        toast.error("Failed to load paper content.");
+
       }
     },
     [loadPaperContent]
@@ -119,12 +117,9 @@ export default function Panel({
       try {
         const result = await addToZotero(paper);
         if (result?.status === "success") {
-          toast.success("Added to Zotero.");
         } else {
-          toast.error("Zotero not connected in Endoc account.");
         }
       } catch {
-        toast.error("Failed to add to Zotero.");
       }
     },
     [addToZotero]
@@ -154,7 +149,6 @@ export default function Panel({
         const text = await res.text();
         throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
       }
-      toast.success("Endoc connected.");
     } catch (e: any) {
       console.error("Key validation failed:", e);
       setKeyProblem(e?.message || "Validation failed.");

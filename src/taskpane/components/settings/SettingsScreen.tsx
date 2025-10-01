@@ -84,7 +84,6 @@ export default function SettingsScreen({
 
             {problem && <Alert severity="error">{problem}</Alert>}
 
-            {/* Optional save button (if provided by parent) */}
             {onValidate && (
               <Button
                 variant="contained"
@@ -101,7 +100,6 @@ export default function SettingsScreen({
               </Button>
             )}
 
-            {/* Quick setup guide — outlined, full-width, same height */}
             <Button
               variant="outlined"
               color="primary"
@@ -119,7 +117,6 @@ export default function SettingsScreen({
           </Stack>
         </Paper>
 
-        {/* Appearance */}
         <Paper
           elevation={0}
           sx={{
@@ -157,7 +154,6 @@ export default function SettingsScreen({
         </Paper>
       </Stack>
 
-      {/* Tutorial modal */}
       <TutorialWindow
         showTutorialWindow={tutorialOpen}
         closeTutorialWindow={() => setTutorialOpen(false)}

@@ -20,9 +20,7 @@ const ZOTERO_RED = "#CC2936";
 const ZOTERO_ICON_URL =
   "https://raw.githubusercontent.com/science-editor/word-add-in/refs/heads/main/assets/zotero-icon.ico";
 
-// Vertical spacing rhythm (in theme.spacing units)
 const RHYTHM = 1.25;
-// Tighter horizontal gap between chips when side-by-side
 const H_GAP = 0.75;
 const CONTROL_MIN_HEIGHT = 48;
 

@@ -24,8 +24,6 @@ export default function QuickSearch({ setSearchTerm, onRunSearch }: Props) {
         }
       });
     } catch (error) {
-      // Non-fatal UX: fail silently; console for devs
-      // eslint-disable-next-line no-console
       console.error("QuickSearch: failed to read document text", error);
     }
   };

@@ -81,7 +81,7 @@ export function DiscoverScreen({
     <Box sx={{ p: PAD, maxWidth: 780, mx: "auto" }}>
       {/* No API key — warning card */}
       {!apiKeyPresent && (
-        <Box sx={{ mt: PAD + 1, mb: PAD + 1 }}>
+        <Box sx={{ mt: PAD, mb: PAD }}>
           <Paper
             elevation={0}
             sx={{
@@ -205,11 +205,11 @@ export function DiscoverScreen({
 
       {/* Results area */}
       {loading ? (
-        <Box sx={{ mt: PAD + 1 }}>
+        <Box sx={{ mt: PAD }}>
           <SkeletonList rows={6} />
         </Box>
       ) : hasResults ? (
-        <Box sx={{ mt: PAD + 1 }}>
+        <Box sx={{ mt: PAD }}>
           <SearchResultsPanel
             foundPapers={results || []}
             handleClickReadPaper={onReadPaper}
@@ -217,7 +217,7 @@ export function DiscoverScreen({
           />
         </Box>
       ) : showEmpty ? (
-        <Box sx={{ mt: PAD + 1 }}>
+        <Box sx={{ mt: PAD }}>
           <Paper
             elevation={0}
             sx={{

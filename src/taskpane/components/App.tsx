@@ -10,7 +10,6 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
-import { toast } from "react-toastify";
 
 // Local
 import "../taskpane.css";
@@ -81,9 +80,6 @@ function createClient(apiKey: string) {
           )}, Path: ${path}`
         );
       });
-      toast.error(`GraphQL error: ${graphQLErrors[0].message}`, {
-        icon: <span role="img" aria-label="error">❌</span>,
-      });
     }
     if (networkError) {
       console.error("[Network error]:", networkError);
@@ -91,9 +87,6 @@ function createClient(apiKey: string) {
         (networkError as any)?.message ||
         (networkError as any)?.name ||
         "Unknown network error";
-      toast.error(`Network error: ${msg}`, {
-        icon: <span role="img" aria-label="warning">⚠️</span>,
-      });
     }
   });
 
