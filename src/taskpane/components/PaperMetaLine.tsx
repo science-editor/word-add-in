@@ -1,33 +1,44 @@
 // Libraries
-import React from "react";
-import { Box } from "@mui/material";
+import * as React from "react";
+import Typography from "@mui/material/Typography";
+import type { Paper } from "../types";
 
-function PaperMetaLine({ paper }) {
-    const authorText =
-        paper.authors?.length
-            ? paper.authors
-                .slice(0, 2)
-                .map(a => `${a?.FamilyName}, ${a?.GivenName?.[0]}.`)
-                .join(" ") +
-            (paper.authors.length > 2 ? " et al." : "")
-            : null;
+/**
+ * Renders authors • venue • year as a SINGLE LINE with ellipsis when needed.
+ */
+export default function PaperMetaLine({ paper }: { paper: Paper }) {
+  const authorText =
+    paper.authors?.length
+      ? `${paper.authors
+          .slice(0, 2)
+          .map((a) => `${a?.FamilyName}, ${a?.GivenName?.[0]}.`)
+          .join(" ")}${paper.authors.length > 2 ? " et al." : ""}`
+      : undefined;
 
-    const metaData = [
-        authorText && <span key="authors">{authorText}</span>,
-        paper.venue && <span key="venue">{paper.venue}</span>,
-        paper.year && <span key="year">{paper.year}</span>,
-    ].filter(Boolean);
+  const pieces = [
+    authorText,
+    paper.venue ? String(paper.venue) : undefined,
+    paper.year ? String(paper.year) : undefined,
+  ].filter(Boolean) as string[];
 
-    const completeMetaDataString = metaData.reduce((acc, el, i) => {
-        if (i === 0) return [el];
-        return [...acc, <span key={`dot-${i}`}>•</span>, el];
-    }, []);
+  const line = pieces.join(" • ");
 
-    return (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {completeMetaDataString}
-        </Box>
-    );
+  return (
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      noWrap
+      title={line} // full text on hover
+      sx={{
+        mt: 0.5,
+        display: "block",
+        maxWidth: "100%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {line}
+    </Typography>
+  );
 }
-
-export default PaperMetaLine;
