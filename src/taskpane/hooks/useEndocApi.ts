@@ -65,7 +65,7 @@ export function useEndocApi() {
       return {
         ...paper,
         abstract: content?.Abstract ?? null,
-        fullPaper: content?.Fullbody ?? null,
+        fullPaper: content?.Fullbody_Parsed ?? null,
       } as Paper;
     },
     [singlePaper]
