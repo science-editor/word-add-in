@@ -54,6 +54,37 @@ export default function PaperWindow({
     }
   };
 
+  const buildFullBody = () => {
+    const arr = expandedPaper?.fullPaper;
+    if (!arr || arr.length === 0)
+      return "Full body not available for this paper.";
+
+    return (
+        <div className="space-y-4">
+          {arr.map((section, sectionIndex) => (
+              <div key={sectionIndex} className="mb-4">
+                {/* Section title */}
+                <h3 className="text-lg font-semibold mb-2">
+                  {section.section_title}
+                </h3>
+
+                {/* Paragraphs */}
+                {section.section_text?.map((paragraph, paraIndex) => (
+                    <div key={paraIndex} className="mb-2">
+                      {paragraph.paragraph_text?.map((sentence, sentIndex) => (
+                          <span key={sentIndex}>
+                  {sentence.sentence_text}{" "}
+                </span>
+                      ))}
+                    </div>
+                ))}
+              </div>
+          ))}
+        </div>
+    );
+  };
+
+
   const hasYear =
     expandedPaper?.year !== undefined &&
     expandedPaper?.year !== null &&
@@ -224,9 +255,8 @@ export default function PaperWindow({
       {/* Full text */}
       <DialogContent sx={{ py: 0, pb: 2 }}>
         <Stack spacing={RHYTHM}>
-          <Typography variant="subtitle2">Full text</Typography>
           <Typography variant="body2" color="text.primary" sx={{ whiteSpace: "pre-wrap" }}>
-            {expandedPaper?.fullPaper || "Full body not available for this paper."}
+            {buildFullBody()}
           </Typography>
         </Stack>
       </DialogContent>
